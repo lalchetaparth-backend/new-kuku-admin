@@ -1,0 +1,197 @@
+import {
+  createStatusSwitch,
+  exportToolbarGroup,
+  liveHoldDropdown,
+  productPreviewImage,
+} from "./shared";
+
+export const productsPageData = {
+  title: "Products",
+  documentTitle: "Products Page - Kuku Foods",
+  toolbarGroups: [exportToolbarGroup, liveHoldDropdown],
+  tabs: [
+    { id: "products-list", label: "Product List" },
+    { id: "add-product", label: "Add Product" },
+  ],
+  columns: [
+    { key: "id", header: "#" },
+    { key: "productName", header: "Product Name" },
+    { key: "weight", header: "Weight (KG)" },
+    { key: "category", header: "Category" },
+    { key: "price", header: "Price" },
+    { key: "mrp", header: "MRP" },
+    { key: "offerStatus", header: "Offer Status" },
+    { key: "status", header: "Status" },
+  ],
+  rows: [
+    {
+      id: "1",
+      productName: "Dry Fruit Kachori (400gm)",
+      weight: "400gm",
+      category: "Kachori",
+      price: "300/-",
+      mrp: "420/-",
+      offerStatus: createStatusSwitch("live", [
+        { value: "live", label: "Live", badgeClass: "text-bg-success" },
+        { value: "hold", label: "On Hold", badgeClass: "text-bg-warning" },
+      ]),
+      status: createStatusSwitch("live", [
+        { value: "live", label: "Live", badgeClass: "text-bg-success" },
+        { value: "hold", label: "On Hold", badgeClass: "text-bg-warning" },
+      ]),
+    },
+    {
+      id: "2",
+      productName: "Chapti Kachori (500gm)",
+      weight: "500gm",
+      category: "Kachori",
+      price: "300/-",
+      mrp: "420/-",
+      offerStatus: createStatusSwitch("live", [
+        { value: "live", label: "Live", badgeClass: "text-bg-success" },
+        { value: "hold", label: "On Hold", badgeClass: "text-bg-warning" },
+      ]),
+      status: createStatusSwitch("hold", [
+        { value: "live", label: "Live", badgeClass: "text-bg-success" },
+        { value: "hold", label: "On Hold", badgeClass: "text-bg-warning" },
+      ]),
+    },
+    {
+      id: "3",
+      productName: "Kaju Katli (300gm)",
+      weight: "400gm",
+      category: "Sweet",
+      price: "300/-",
+      mrp: "420/-",
+      offerStatus: createStatusSwitch("hold", [
+        { value: "live", label: "Live", badgeClass: "text-bg-success" },
+        { value: "hold", label: "On Hold", badgeClass: "text-bg-warning" },
+      ]),
+      status: createStatusSwitch("live", [
+        { value: "live", label: "Live", badgeClass: "text-bg-success" },
+        { value: "hold", label: "On Hold", badgeClass: "text-bg-warning" },
+      ]),
+    },
+  ],
+  primaryFields: [
+    {
+      type: "text",
+      name: "metaTitle",
+      label: "Meta Title",
+      placeholder: "Meta Title",
+      colClass: "col-md-4",
+    },
+    {
+      type: "text",
+      name: "metaKeywords",
+      label: "Meta Keywords",
+      placeholder: "Meta Keywords",
+      colClass: "col-md-4",
+    },
+    {
+      type: "text",
+      name: "metaDescription",
+      label: "Meta description",
+      placeholder: "Meta description",
+      colClass: "col-md-4",
+    },
+    {
+      type: "text",
+      name: "productName",
+      label: "Product Name",
+      placeholder: "Product Name",
+      colClass: "col-md-4",
+    },
+    {
+      type: "select",
+      name: "category",
+      label: "Select Category",
+      colClass: "col-md-2",
+      options: [
+        { value: "kachori", label: "Kachori" },
+        { value: "sweet", label: "Sweet" },
+        { value: "hampers", label: "Hampers" },
+      ],
+    },
+    {
+      type: "select",
+      name: "manageInventory",
+      label: "Manage Inventory",
+      colClass: "col-md-2",
+      options: [
+        { value: "yes", label: "Yes" },
+        { value: "no", label: "No" },
+      ],
+    },
+    {
+      type: "text",
+      name: "stock",
+      label: "Stock in Pkts",
+      placeholder: "Stock",
+      colClass: "col-md-2",
+    },
+    {
+      type: "text",
+      name: "labelBadge",
+      label: "Lable Product badge",
+      placeholder: "lable badge",
+      colClass: "col-md-2",
+    },
+  ],
+  variants: [
+    { id: "variant-1", weight: "", price: "", mrp: "" },
+    { id: "variant-2", weight: "", price: "", mrp: "" },
+  ],
+  shippingFields: [
+    {
+      type: "text",
+      name: "itemWeight",
+      label: "Item Weight (kg)",
+      placeholder: "ItemWeight(kg)",
+      colClass: "col-md-3",
+    },
+    {
+      type: "text",
+      name: "itemLength",
+      label: "Item length(mm)",
+      placeholder: "Itemlength(mm)",
+      colClass: "col-md-3",
+    },
+    {
+      type: "text",
+      name: "itemWidth",
+      label: "Item Width(mm)",
+      placeholder: "Itemwidth(mm)",
+      colClass: "col-md-3",
+    },
+    {
+      type: "text",
+      name: "itemHeight",
+      label: "Item Height(mm)",
+      placeholder: "Itemheight(mm)",
+      colClass: "col-md-3",
+    },
+    {
+      type: "text",
+      name: "hsnNumber",
+      label: "HSN Number.",
+      placeholder: "HSNNo",
+      colClass: "col-md-6",
+    },
+    {
+      type: "text",
+      name: "gstNumber",
+      label: "GST Number.",
+      placeholder: "GSTNo",
+      colClass: "col-md-6",
+    },
+  ],
+  mainPhoto: {
+    label: "Product Main Photo",
+    previewSrc: productPreviewImage,
+  },
+  otherPhotos: {
+    label: "Other Photos",
+    previewImages: [productPreviewImage, productPreviewImage, productPreviewImage],
+  },
+};

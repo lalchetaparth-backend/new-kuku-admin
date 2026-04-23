@@ -1,0 +1,30 @@
+body {
+  min-height: 100vh;
+}
+
+.bi {
+  vertical-align: -0.125em;
+  fill: currentColor;
+}
+
+.status-switch {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+  padding-left: 0;
+}
+
+.status-switch .form-check-input {
+  float: none;
+  margin-left: 0;
+  margin-top: 0;
+}
+
+.status-switch .form-check-label {
+  margin-bottom: 0;
+}
+
+.modal-backdrop {
+  cursor: pointer;
+}
