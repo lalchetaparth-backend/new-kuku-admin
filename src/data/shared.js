@@ -1,10 +1,11 @@
 export const productPreviewImage =
   "/assets/products/dry-chapti-kachori/1 chapti kachori.jpg";
 
-export const createStatusSwitch = (current, options) => ({
+export const createStatusSwitch = (current, options, config = {}) => ({
   type: "statusSwitch",
   current,
   options,
+  ...config,
 });
 
 export const createActionButton = (

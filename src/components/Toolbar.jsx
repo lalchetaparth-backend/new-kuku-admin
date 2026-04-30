@@ -1,4 +1,4 @@
-function Toolbar({ groups }) {
+function Toolbar({ groups, state = {}, onAction }) {
   return groups.map((group, index) => {
     if (group.type === "buttons") {
       return (
@@ -20,6 +20,8 @@ function Toolbar({ groups }) {
     }
 
     if (group.type === "dropdown") {
+      const selectedValue = group.id ? state[group.id] : undefined;
+
       return (
         <div className={group.className} key={`toolbar-group-${index}`}>
           <button
@@ -34,14 +36,18 @@ function Toolbar({ groups }) {
           </button>
           <ul className="dropdown-menu">
             {group.items.map((item) => (
-              <li key={item.label}>
-                <a
-                  className="dropdown-item"
-                  href="#"
-                  onClick={(event) => event.preventDefault()}
+              <li key={`${group.id ?? index}-${item.value ?? item.label}`}>
+                <button
+                  type="button"
+                  className={`dropdown-item ${
+                    selectedValue === (item.value ?? item.label) ? "active" : ""
+                  }`}
+                  onClick={() =>
+                    onAction?.(group.id, item.value ?? item.label, item)
+                  }
                 >
                   {item.label}
-                </a>
+                </button>
               </li>
             ))}
           </ul>

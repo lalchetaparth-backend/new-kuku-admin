@@ -1,6 +1,6 @@
 import StatusSwitch from "./StatusSwitch";
 
-function renderCellContent(value, row, onAction) {
+function renderCellContent(value, row, onAction, onStatusChange) {
   if (Array.isArray(value)) {
     return value.map((item) => (
       <p className="mb-0" key={item}>
@@ -10,7 +10,12 @@ function renderCellContent(value, row, onAction) {
   }
 
   if (value?.type === "statusSwitch") {
-    return <StatusSwitch current={value.current} options={value.options} />;
+    return (
+      <StatusSwitch
+        {...value}
+        onChange={(checked) => onStatusChange?.(row, value, checked)}
+      />
+    );
   }
 
   if (value?.type === "iconLink") {
@@ -36,7 +41,7 @@ function renderCellContent(value, row, onAction) {
   return value;
 }
 
-function DataTable({ columns, rows, onAction }) {
+function DataTable({ columns, rows, onAction, onStatusChange }) {
   return (
     <div className="table-responsive small">
       <table className="table table-striped table-sm">
@@ -54,7 +59,12 @@ function DataTable({ columns, rows, onAction }) {
             <tr key={row.id ?? rowIndex}>
               {columns.map((column) => (
                 <td key={`${row.id ?? rowIndex}-${column.key}`}>
-                  {renderCellContent(row[column.key], row, onAction)}
+                  {renderCellContent(
+                    row[column.key],
+                    row,
+                    onAction,
+                    onStatusChange,
+                  )}
                 </td>
               ))}
             </tr>

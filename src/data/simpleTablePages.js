@@ -5,6 +5,8 @@ import {
   filterDropdown,
   orderStatusDropdown,
 } from "./shared";
+import { getCorporateGiftingRows } from "../services/corporateGifting";
+import { getCustomerInquiryRows } from "../services/customerInquiry";
 
 export const simpleTablePages = {
   orders: {
@@ -68,17 +70,9 @@ export const simpleTablePages = {
       { key: "location", header: "Location" },
       { key: "purpose", header: "Purpose of inquiry" },
     ],
-    rows: [
-      {
-        id: "1",
-        name: "Person name",
-        companyName: "Company name",
-        mobile: "999 999 9999",
-        email: "mail@yourmail.com",
-        location: "Jamnagar",
-        purpose: "Purpose of inquiry",
-      },
-    ],
+    rows: [],
+    loadRows: getCorporateGiftingRows,
+    emptyMessage: "No corporate gifting inquiries found.",
   },
   inquiries: {
     title: "Inquiries",
@@ -92,15 +86,8 @@ export const simpleTablePages = {
       { key: "location", header: "Location" },
       { key: "message", header: "Message" },
     ],
-    rows: [
-      {
-        id: "1",
-        name: "Person name",
-        mobile: "999 999 9999",
-        email: "mail@yourmail.com",
-        location: "Jamnagar",
-        message: "Message from inquiry is shown here.",
-      },
-    ],
+    rows: [],
+    loadRows: getCustomerInquiryRows,
+    emptyMessage: "No inquiries found.",
   },
 };

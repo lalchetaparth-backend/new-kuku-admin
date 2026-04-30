@@ -3,6 +3,7 @@ import {
   distributorDetail,
   exportToolbarGroup,
 } from "./shared";
+import { getDistributorInquiryRows } from "../services/distributorInquiry";
 
 const detailColumns = [
   { key: "id", header: "#" },
@@ -35,7 +36,9 @@ export const detailPages = {
     documentTitle: "Distributor inquiry - Kuku Foods",
     toolbarGroups: [exportToolbarGroup],
     columns: detailColumns,
-    rows: [detailRow],
+    rows: [],
+    loadRows: getDistributorInquiryRows,
+    emptyMessage: "No distributor inquiries found.",
   },
   billings: {
     title: "Billings",

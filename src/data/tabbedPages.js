@@ -1,15 +1,40 @@
 import {
   createStatusSwitch,
   exportToolbarGroup,
-  liveHoldDropdown,
   productPreviewImage,
 } from "./shared";
+import { addBlog, getBlogRows, updateBlogStatus } from "../services/blogs";
+
+const blogStatusDropdown = {
+  id: "blogStatus",
+  type: "dropdown",
+  className: "btn-group me-2",
+  buttonClass: "btn btn-primary dropdown-toggle",
+  iconClass: "bi bi-hourglass-split",
+  label: "Select Status",
+  defaultValue: "all",
+  items: [
+    { label: "All Status", value: "all" },
+    { label: "On Hold", value: "inactive" },
+    { label: "Active", value: "active" },
+  ],
+};
+
+function filterBlogRows(rows, filters) {
+  const selectedStatus = filters.blogStatus ?? "all";
+
+  if (selectedStatus === "all") {
+    return rows;
+  }
+
+  return rows.filter((row) => row.status?.current === selectedStatus);
+}
 
 export const tabbedPages = {
   blogs: {
     title: "Blogs",
     documentTitle: "Blogs Page - Kuku Foods",
-    toolbarGroups: [exportToolbarGroup, liveHoldDropdown],
+    toolbarGroups: [exportToolbarGroup, blogStatusDropdown],
     tabs: [
       {
         id: "blogs-list",
@@ -21,82 +46,87 @@ export const tabbedPages = {
           { key: "subject", header: "Subject" },
           { key: "status", header: "Status" },
         ],
-        rows: [
-          {
-            id: "1",
-            name: "Blogs Name",
-            date: "24 March 2026",
-            subject: "Subject of blogs",
-            status: createStatusSwitch("live", [
-              { value: "live", label: "Live", badgeClass: "text-bg-success" },
-              { value: "hold", label: "On Hold", badgeClass: "text-bg-warning" },
-            ]),
-          },
-          {
-            id: "2",
-            name: "Blogs Name",
-            date: "24 March 2026",
-            subject: "Subject of blogs",
-            status: createStatusSwitch("hold", [
-              { value: "live", label: "Live", badgeClass: "text-bg-success" },
-              { value: "hold", label: "On Hold", badgeClass: "text-bg-warning" },
-            ]),
-          },
-        ],
+        rows: [],
+        loadRows: getBlogRows,
+        updateStatus: updateBlogStatus,
+        activeStatusValue: "active",
+        inactiveStatusValue: "inactive",
+        filterRows: filterBlogRows,
+        emptyMessage: "No blogs found.",
       },
       {
         id: "add-blogs",
         label: "Add Blogs",
+        submitForm: addBlog,
+        refreshTabsOnSuccess: ["blogs-list"],
         formFields: [
           {
             type: "text",
-            name: "metaTitle",
+            name: "meta_title",
             label: "Meta Title",
             placeholder: "Meta Title",
             colClass: "col-md-4",
+            required: true,
           },
           {
             type: "text",
-            name: "metaKeywords",
+            name: "meta_keywords",
             label: "Meta Keywords",
             placeholder: "Meta Keywords",
             colClass: "col-md-4",
+            required: true,
           },
           {
             type: "text",
-            name: "metaDescription",
+            name: "meta_description",
             label: "Meta description",
             placeholder: "Meta description",
             colClass: "col-md-4",
+            required: true,
           },
           {
             type: "text",
-            name: "blogTitle",
-            label: "Blogs Title",
-            placeholder: "Product Name",
-            colClass: "col-md-6",
+            name: "description",
+            label: "Blog Title",
+            placeholder: "Blog Title",
+            colClass: "col-md-4",
+            required: true,
           },
           {
             type: "text",
-            name: "blogSubject",
-            label: "Blogs Subject",
-            placeholder: "Product Name",
-            colClass: "col-md-6",
+            name: "blog_subject",
+            label: "Blog Subject",
+            placeholder: "Blog Subject",
+            colClass: "col-md-4",
+            required: true,
+          },
+          {
+            type: "select",
+            name: "status",
+            label: "Status",
+            colClass: "col-md-4",
+            defaultValue: "Active",
+            options: [
+              { value: "Active", label: "Active" },
+              { value: "Inactive", label: "On Hold" },
+            ],
           },
           {
             type: "textarea",
-            name: "blogContent",
-            label: "Blogs Content",
+            name: "blog_content",
+            label: "Blog Content",
             placeholder: "Leave a comment here",
             colClass: "col-md-12",
             height: 100,
+            required: true,
           },
           {
             type: "file",
-            name: "blogImage",
-            label: "Blogs Title Image",
+            name: "file",
+            label: "Blog Title Image",
             colClass: "col-md-4",
-            previewSrc: productPreviewImage,
+            accept: "image/*",
+            required: true,
           },
           {
             type: "submit",

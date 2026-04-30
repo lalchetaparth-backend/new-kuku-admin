@@ -1,9 +1,22 @@
-import {
-  createStatusSwitch,
-  exportToolbarGroup,
-  liveHoldDropdown,
-  productPreviewImage,
-} from "./shared";
+import { exportToolbarGroup, liveHoldDropdown, productPreviewImage } from "./shared";
+import { getProductRows } from "../services/products";
+
+const emptyVariantFields = {
+  weight: "",
+  price: "",
+  mrp: "",
+  itemWeight: "",
+  itemLength: "",
+  itemWidth: "",
+  itemHeight: "",
+};
+
+export function createProductVariant(index) {
+  return {
+    id: `variant-${index}`,
+    ...emptyVariantFields,
+  };
+}
 
 export const productsPageData = {
   title: "Products",
@@ -23,101 +36,58 @@ export const productsPageData = {
     { key: "offerStatus", header: "Offer Status" },
     { key: "status", header: "Status" },
   ],
-  rows: [
-    {
-      id: "1",
-      productName: "Dry Fruit Kachori (400gm)",
-      weight: "400gm",
-      category: "Kachori",
-      price: "300/-",
-      mrp: "420/-",
-      offerStatus: createStatusSwitch("live", [
-        { value: "live", label: "Live", badgeClass: "text-bg-success" },
-        { value: "hold", label: "On Hold", badgeClass: "text-bg-warning" },
-      ]),
-      status: createStatusSwitch("live", [
-        { value: "live", label: "Live", badgeClass: "text-bg-success" },
-        { value: "hold", label: "On Hold", badgeClass: "text-bg-warning" },
-      ]),
-    },
-    {
-      id: "2",
-      productName: "Chapti Kachori (500gm)",
-      weight: "500gm",
-      category: "Kachori",
-      price: "300/-",
-      mrp: "420/-",
-      offerStatus: createStatusSwitch("live", [
-        { value: "live", label: "Live", badgeClass: "text-bg-success" },
-        { value: "hold", label: "On Hold", badgeClass: "text-bg-warning" },
-      ]),
-      status: createStatusSwitch("hold", [
-        { value: "live", label: "Live", badgeClass: "text-bg-success" },
-        { value: "hold", label: "On Hold", badgeClass: "text-bg-warning" },
-      ]),
-    },
-    {
-      id: "3",
-      productName: "Kaju Katli (300gm)",
-      weight: "400gm",
-      category: "Sweet",
-      price: "300/-",
-      mrp: "420/-",
-      offerStatus: createStatusSwitch("hold", [
-        { value: "live", label: "Live", badgeClass: "text-bg-success" },
-        { value: "hold", label: "On Hold", badgeClass: "text-bg-warning" },
-      ]),
-      status: createStatusSwitch("live", [
-        { value: "live", label: "Live", badgeClass: "text-bg-success" },
-        { value: "hold", label: "On Hold", badgeClass: "text-bg-warning" },
-      ]),
-    },
-  ],
+  rows: [],
+  loadRows: getProductRows,
+  emptyMessage: "No products found.",
   primaryFields: [
     {
       type: "text",
-      name: "metaTitle",
+      name: "meta_title",
       label: "Meta Title",
       placeholder: "Meta Title",
       colClass: "col-md-4",
+      required: true,
     },
     {
       type: "text",
-      name: "metaKeywords",
+      name: "meta_keywords",
       label: "Meta Keywords",
       placeholder: "Meta Keywords",
       colClass: "col-md-4",
+      required: true,
     },
     {
       type: "text",
-      name: "metaDescription",
+      name: "meta_description",
       label: "Meta description",
       placeholder: "Meta description",
       colClass: "col-md-4",
+      required: true,
     },
     {
       type: "text",
-      name: "productName",
+      name: "product_name",
       label: "Product Name",
       placeholder: "Product Name",
       colClass: "col-md-4",
+      required: true,
     },
     {
       type: "select",
-      name: "category",
+      name: "category_id",
       label: "Select Category",
       colClass: "col-md-2",
-      options: [
-        { value: "kachori", label: "Kachori" },
-        { value: "sweet", label: "Sweet" },
-        { value: "hampers", label: "Hampers" },
-      ],
+      defaultValue: "",
+      placeholderOption: "Select Category",
+      required: true,
+      options: [],
     },
     {
       type: "select",
-      name: "manageInventory",
+      name: "manage_inventory",
       label: "Manage Inventory",
       colClass: "col-md-2",
+      required: true,
       options: [
         { value: "yes", label: "Yes" },
         { value: "no", label: "No" },
@@ -125,65 +95,37 @@ export const productsPageData = {
     },
     {
       type: "text",
-      name: "stock",
+      name: "stock_in_pkts",
       label: "Stock in Pkts",
       placeholder: "Stock",
       colClass: "col-md-2",
+      required: true,
     },
     {
       type: "text",
-      name: "labelBadge",
+      name: "label_badge",
       label: "Lable Product badge",
       placeholder: "lable badge",
       colClass: "col-md-2",
     },
   ],
-  variants: [
-    { id: "variant-1", weight: "", price: "", mrp: "" },
-    { id: "variant-2", weight: "", price: "", mrp: "" },
-  ],
-  shippingFields: [
+  variants: [createProductVariant(1), createProductVariant(2)],
+  taxFields: [
     {
       type: "text",
-      name: "itemWeight",
-      label: "Item Weight (kg)",
-      placeholder: "ItemWeight(kg)",
-      colClass: "col-md-3",
-    },
-    {
-      type: "text",
-      name: "itemLength",
-      label: "Item length(mm)",
-      placeholder: "Itemlength(mm)",
-      colClass: "col-md-3",
-    },
-    {
-      type: "text",
-      name: "itemWidth",
-      label: "Item Width(mm)",
-      placeholder: "Itemwidth(mm)",
-      colClass: "col-md-3",
-    },
-    {
-      type: "text",
-      name: "itemHeight",
-      label: "Item Height(mm)",
-      placeholder: "Itemheight(mm)",
-      colClass: "col-md-3",
-    },
-    {
-      type: "text",
-      name: "hsnNumber",
+      name: "hsn",
       label: "HSN Number.",
       placeholder: "HSNNo",
       colClass: "col-md-6",
+      required: true,
     },
     {
       type: "text",
-      name: "gstNumber",
+      name: "gst",
       label: "GST Number.",
       placeholder: "GSTNo",
       colClass: "col-md-6",
+      required: true,
     },
   ],
   mainPhoto: {

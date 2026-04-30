@@ -1,33 +1,19 @@
 import { activeHoldDropdown, createStatusSwitch, exportToolbarGroup } from "./shared";
 
+const categoryStatusOptions = [
+  { value: "active", label: "Active", badgeClass: "text-bg-success" },
+  { value: "hold", label: "Hold", badgeClass: "text-bg-warning" },
+];
+
 export const categoryPageData = {
   title: "Product Category",
   documentTitle: "Category Page - Kuku Foods",
   toolbarGroups: [exportToolbarGroup, activeHoldDropdown],
-  formFields: [
-    {
-      type: "text",
-      name: "categoryName",
-      label: "Category name",
-      placeholder: "Category name",
-      colClass: "col-md-4",
-    },
-    {
-      type: "submit",
-      label: "Add Category",
-      inputClassName: "btn btn-dark",
-      colClass: "col-md-3",
-    },
-  ],
-  columns: [
-    { key: "id", header: "#" },
-    { key: "category", header: "Category" },
-    { key: "products", header: "Product (4)" },
-    { key: "status", header: "Status" },
-  ],
+  imageSrc: "/assets/images/kuku-namkeen-logo.png",
   rows: [
     {
       id: "1",
+      imageAlt: "Kuku Namkeen",
       category: "Kachori",
       products: [
         "Chapti Kachori",
@@ -35,13 +21,11 @@ export const categoryPageData = {
         "Dry Fruit Kachori",
         "Rajbhog Kachori",
       ],
-      status: createStatusSwitch("active", [
-        { value: "active", label: "Active", badgeClass: "text-bg-success" },
-        { value: "hold", label: "Hold", badgeClass: "text-bg-warning" },
-      ]),
+      status: createStatusSwitch("active", categoryStatusOptions),
     },
     {
       id: "2",
+      imageAlt: "Kuku Namkeen",
       category: "Sweets",
       products: [
         "Gulab Paak",
@@ -50,23 +34,18 @@ export const categoryPageData = {
         "Adadiya",
         "Anjir Paak",
       ],
-      status: createStatusSwitch("active", [
-        { value: "active", label: "Active", badgeClass: "text-bg-success" },
-        { value: "hold", label: "Hold", badgeClass: "text-bg-warning" },
-      ]),
+      status: createStatusSwitch("active", categoryStatusOptions),
     },
     {
       id: "3",
+      imageAlt: "Kuku Namkeen",
       category: "Combo",
       products: [
         "K01-Holi Special (Chapti Kachori - Round Kachori)",
         "K02-Ramnavmi Special (Kaju katli - Round Kachori)",
         "K03-Diwali Special (Sweet Bliss Mini Box - Round Kachori)",
       ],
-      status: createStatusSwitch("hold", [
-        { value: "active", label: "Active", badgeClass: "text-bg-success" },
-        { value: "hold", label: "Hold", badgeClass: "text-bg-warning" },
-      ]),
+      status: createStatusSwitch("active", categoryStatusOptions),
     },
   ],
 };

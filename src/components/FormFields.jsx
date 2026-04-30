@@ -7,8 +7,11 @@ function renderField(field) {
             type={field.type}
             className="form-control"
             id={field.name}
+            name={field.name}
             placeholder={field.placeholder}
             defaultValue={field.defaultValue ?? ""}
+            required={field.required ?? false}
+            disabled={field.disabled ?? false}
           />
           <label htmlFor={field.name}>{field.label}</label>
         </div>
@@ -23,8 +26,11 @@ function renderField(field) {
           <select
             className="form-select"
             id={field.name}
+            name={field.name}
             defaultValue={field.defaultValue ?? ""}
             aria-label={field.label}
+            required={field.required ?? false}
+            disabled={field.disabled ?? false}
           >
             {field.placeholderOption ? (
               <option value="">{field.placeholderOption}</option>
@@ -49,8 +55,11 @@ function renderField(field) {
             className="form-control"
             placeholder={field.placeholder}
             id={field.name}
+            name={field.name}
             style={{ height: `${field.height ?? 100}px` }}
             defaultValue={field.defaultValue ?? ""}
+            required={field.required ?? false}
+            disabled={field.disabled ?? false}
           />
           <label htmlFor={field.name}>{field.label}</label>
         </div>
@@ -65,7 +74,16 @@ function renderField(field) {
           <label htmlFor={field.name} className="form-label">
             {field.label}
           </label>
-          <input className="form-control" id={field.name} type="file" />
+          <input
+            className="form-control"
+            id={field.name}
+            name={field.name}
+            type="file"
+            accept={field.accept}
+            multiple={field.multiple ?? false}
+            required={field.required ?? false}
+            disabled={field.disabled ?? false}
+          />
         </div>
         {field.previewSrc ? (
           <img src={field.previewSrc} className="admin-pro-img" alt={field.label} />

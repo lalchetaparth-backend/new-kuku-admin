@@ -25,6 +25,245 @@ body {
   margin-bottom: 0;
 }
 
+.status-switch .badge {
+  padding: 0.35rem 0.55rem;
+  border-radius: 0.55rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.status-badge-inactive {
+  background: #ffc108;
+  color: #000000;
+}
+
+.app-toast-container {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 1080;
+  width: min(22rem, calc(100vw - 2rem));
+  pointer-events: none;
+}
+
+.app-toast {
+  padding: 0.85rem 1rem;
+  border: 1px solid transparent;
+  border-radius: 0.85rem;
+  box-shadow: 0 0.75rem 2rem rgba(15, 23, 42, 0.16);
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.app-toast-success {
+  background: #d1fae5;
+  color: #065f46;
+  border-color: #a7f3d0;
+}
+
 .modal-backdrop {
   cursor: pointer;
+}
+
+.category-page .h2 {
+  font-size: clamp(2.25rem, 3vw, 3rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+}
+
+.category-form-section {
+  padding-bottom: 1.5rem;
+  margin-bottom: 1.4rem;
+}
+
+.category-section-title {
+  margin-bottom: 0.9rem;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.category-form {
+  max-width: 980px;
+}
+
+.category-input,
+.category-file-input,
+.category-submit-button {
+  min-height: 47px;
+}
+
+.category-input,
+.category-file-input {
+  font-size: 1rem;
+}
+
+.category-submit-button {
+  border-radius: 0.5rem;
+  padding-inline: 1rem;
+  white-space: nowrap;
+}
+
+.category-table-wrap {
+  overflow-x: auto;
+}
+
+.category-table {
+  --bs-table-striped-bg: #f3f3f3;
+  margin-bottom: 0;
+}
+
+.category-table thead th {
+  padding: 0.9rem 0.35rem 0.7rem;
+  font-size: 1.02rem;
+  font-weight: 700;
+  color: #111827;
+  white-space: nowrap;
+  border-bottom-width: 1px;
+}
+
+.category-table tbody td {
+  padding: 0.55rem 0.35rem;
+  vertical-align: top;
+}
+
+.category-id-column,
+.category-id-cell {
+  width: 2rem;
+}
+
+.category-image-column,
+.category-image-cell {
+  width: 9.5rem;
+}
+
+.category-status-column,
+.category-status-cell {
+  width: 10.5rem;
+}
+
+.category-logo {
+  display: block;
+  width: 112px;
+  max-width: 100%;
+  height: auto;
+}
+
+.category-name-cell {
+  min-width: 5.5rem;
+  padding-top: 1rem;
+  font-size: 1rem;
+  color: #111827;
+}
+
+.category-products-cell {
+  min-width: 38rem;
+  padding-top: 0.55rem;
+}
+
+.category-product-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.category-product-pill {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.45rem;
+  padding: 0.18rem 0.55rem;
+  border-radius: 0.5rem;
+  background: #232a31;
+  color: #fff;
+  font-size: 0.74rem;
+  font-weight: 700;
+  line-height: 1.1;
+  white-space: nowrap;
+}
+
+.category-page .status-switch {
+  justify-content: flex-end;
+  gap: 0.45rem;
+  padding-top: 0.2rem;
+}
+
+.category-page .status-switch .form-check-input {
+  width: 2.2rem;
+  height: 1.15rem;
+  margin-right: 0.15rem;
+  background-color: #e5e7eb;
+  border-color: #d1d5db;
+}
+
+.category-page .status-switch .form-check-input:focus {
+  box-shadow: none;
+}
+
+.category-page .status-switch .badge {
+  padding: 0.32rem 0.5rem;
+  border-radius: 0.55rem;
+  font-size: 0.84rem;
+  font-weight: 700;
+}
+
+.category-page .status-switch .text-bg-warning {
+  color: #111827 !important;
+}
+
+.product-variant-card {
+  margin-bottom: 1rem;
+  padding: 1rem;
+  border: 1px solid #dee2e6;
+  border-radius: 1rem;
+  background: #fff;
+}
+
+.product-variant-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.product-variant-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #212529;
+}
+
+@media (max-width: 991.98px) {
+  .category-products-cell {
+    min-width: 28rem;
+  }
+
+  .category-page .status-switch {
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .category-page .h2 {
+    font-size: 2rem;
+  }
+
+  .product-variant-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .category-form-section {
+    padding-bottom: 1rem;
+  }
+
+  .category-logo {
+    width: 96px;
+  }
+
+  .category-products-cell {
+    min-width: 20rem;
+  }
+
+  .category-product-pill {
+    white-space: normal;
+  }
 }
