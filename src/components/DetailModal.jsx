@@ -1,4 +1,38 @@
 import { useEffect } from "react";
+import DataTable from "./DataTable";
+
+const detailTableColumns = [
+  {
+    key: "label",
+    header: "Label",
+    grow: 1,
+    cell: (row) => <span className="fw-semibold">{row.label}</span>,
+  },
+  {
+    key: "value",
+    header: "Value",
+    grow: 1.3,
+  },
+];
+
+const detailTableStyles = {
+  headRow: {
+    style: {
+      display: "none",
+    },
+  },
+  rows: {
+    style: {
+      fontSize: "0.875rem",
+    },
+  },
+  cells: {
+    style: {
+      padding: "0.45rem 0.5rem",
+      alignItems: "flex-start",
+    },
+  },
+};
 
 function DetailModal({ detail, onClose }) {
   useEffect(() => {
@@ -53,18 +87,16 @@ function DetailModal({ detail, onClose }) {
               <div className="row">
                 {detail.sections.map((section, sectionIndex) => (
                   <div className="col-md-6" key={`${detail.title}-${sectionIndex}`}>
-                    <div className="table-responsive small">
-                      <table className="table table-striped table-sm">
-                        <tbody>
-                          {section.map(([label, value]) => (
-                            <tr key={`${detail.title}-${label}`}>
-                              <th scope="col">{label}</th>
-                              <td>{value}</td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
+                    <DataTable
+                      columns={detailTableColumns}
+                      rows={section.map(([label, value], rowIndex) => ({
+                        id: `${sectionIndex}-${rowIndex}`,
+                        label,
+                        value,
+                      }))}
+                      noTableHead={true}
+                      customStyles={detailTableStyles}
+                    />
                   </div>
                 ))}
               </div>

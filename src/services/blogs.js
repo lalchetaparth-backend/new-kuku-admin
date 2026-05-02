@@ -77,10 +77,40 @@ function normalizeStatusMessage(response) {
   return response;
 }
 
+function formatFileName(value) {
+  if (!value) {
+    return EMPTY_VALUE;
+  }
+
+  const normalizedValue = String(value).trim().split("?")[0];
+  const segments = normalizedValue.split("/").filter(Boolean);
+  const fileName = segments[segments.length - 1];
+
+  return formatValue(fileName || normalizedValue);
+}
+
+function formatBlogName(blog) {
+  const candidateValues = [
+    blog.meta_title,
+    blog.description,
+    blog.blog_subject,
+  ];
+
+  for (const candidateValue of candidateValues) {
+    const formattedValue = formatValue(candidateValue);
+
+    if (formattedValue !== EMPTY_VALUE) {
+      return formattedValue;
+    }
+  }
+
+  return formatFileName(blog.file);
+}
+
 function mapBlogToRow(blog, index) {
   return {
     id: index + 1,
-    name: formatValue(blog.meta_title ?? blog.file),
+    name: formatBlogName(blog),
     date: formatDate(blog.created_at),
     subject: formatValue(
       blog.blog_subject ?? blog.meta_description ?? blog.blog_content,

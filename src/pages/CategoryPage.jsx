@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import DataTable from "../components/DataTable";
 import PageHeader from "../components/PageHeader";
 import StatusSwitch from "../components/StatusSwitch";
 import { categoryPageData } from "../data/categoryData";
@@ -35,6 +36,49 @@ function filterCategories(categories, filters) {
     (category) => normalizeCategoryStatus(category.category_status) === selectedStatus,
   );
 }
+
+const categoryTableStyles = {
+  table: {
+    style: {
+      minWidth: "920px",
+    },
+  },
+  responsiveWrapper: {
+    style: {
+      overflowX: "auto",
+    },
+  },
+  headRow: {
+    style: {
+      borderBottomColor: "#e5e7eb",
+    },
+  },
+  headCells: {
+    style: {
+      padding: "1rem 0.85rem",
+      fontSize: "0.95rem",
+      fontWeight: 700,
+      color: "#111827",
+      whiteSpace: "nowrap",
+      letterSpacing: "0.01em",
+      borderBottomColor: "#e5e7eb",
+    },
+  },
+  rows: {
+    style: {
+      "&:not(:last-of-type)": {
+        borderBottomColor: "#e5e7eb",
+      },
+    },
+  },
+  cells: {
+    style: {
+      padding: "1rem 0.85rem",
+      alignItems: "center",
+      borderBottomColor: "#e5e7eb",
+    },
+  },
+};
 
 function CategoryPage() {
   useDocumentTitle(categoryPageData.documentTitle);
@@ -171,6 +215,104 @@ function CategoryPage() {
     (count, category) => count + getCategoryProducts(category).length,
     0,
   );
+  const categoryColumns = [
+    {
+      key: "category_id",
+      header: "#",
+      width: "4.5rem",
+      cell: (row) => (
+        <div className="category-id-cell">
+          <span className="category-id-badge">{row.category_id}</span>
+        </div>
+      ),
+    },
+    {
+      key: "category_image",
+      header: "Image",
+      width: "7.5rem",
+      cell: (row) => (
+        <div className="category-image-cell">
+          <div className="category-image-frame">
+            <img
+              src={row.category_image || categoryPageData.imageSrc}
+              alt={row.category_name}
+              className="category-logo"
+            />
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: "category_name",
+      header: "Category",
+      minWidth: "12rem",
+      cell: (row) => {
+        const products = getCategoryProducts(row);
+
+        return (
+          <div className="category-name-cell">
+            <div className="category-name-block">
+              <span className="category-name">{row.category_name}</span>
+              <span className="category-meta">
+                {products.length} product{products.length === 1 ? "" : "s"}
+              </span>
+            </div>
+          </div>
+        );
+      },
+    },
+    {
+      key: "products",
+      header: `Product (${totalProducts})`,
+      minWidth: "22rem",
+      grow: 2,
+      cell: (row) => {
+        const products = getCategoryProducts(row);
+
+        return (
+          <div className="category-products-cell">
+            <div className="category-product-list">
+              {products.length > 0 ? (
+                products.map((product) => (
+                  <span
+                    className="category-product-pill"
+                    key={`${row.category_id}-${product.product_id}`}
+                  >
+                    {product.product_name}
+                  </span>
+                ))
+              ) : (
+                <span className="category-empty-pill">No products</span>
+              )}
+            </div>
+          </div>
+        );
+      },
+    },
+    {
+      key: "category_status",
+      header: "Status",
+      width: "11rem",
+      cell: (row) => (
+        <div className="category-status-cell">
+          <div className="category-status-wrap">
+            <StatusSwitch
+              current={normalizeCategoryStatus(row.category_status)}
+              options={[
+                { value: "active", label: "Active", badgeClass: "text-bg-success" },
+                { value: "inactive", label: "Inactive", badgeClass: "text-bg-warning" },
+              ]}
+              activeValue="active"
+              showCurrentOnly={true}
+              interactive={true}
+              disabled={isUpdatingStatus}
+              onChange={(checked) => handleStatusChange(row, checked)}
+            />
+          </div>
+        </div>
+      ),
+    },
+  ];
 
   return (
     <>
@@ -225,7 +367,7 @@ function CategoryPage() {
           </form>
         </div>
 
-        <div className="table-responsive small category-table-wrap">
+        <div className="category-table-wrap">
           {statusErrorMessage ? (
             <div className="alert alert-danger m-3" role="alert">
               Failed to update status. {statusErrorMessage}
@@ -251,82 +393,14 @@ function CategoryPage() {
               No categories found.
             </div>
           ) : (
-            <table className="table table-striped table-sm category-table">
-              <thead>
-                <tr>
-                  <th scope="col" className="category-id-column">
-                    #
-                  </th>
-                  <th scope="col" className="category-image-column">
-                    Image
-                  </th>
-                  <th scope="col">Category</th>
-                  <th scope="col">Product ({totalProducts})</th>
-                  <th scope="col" className="category-status-column">
-                    Status
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {visibleCategories.map((row) => {
-                  const products = getCategoryProducts(row);
-
-                  return (
-                    <tr key={row.category_id}>
-                      <td className="category-id-cell">
-                        <span className="category-id-badge">{row.category_id}</span>
-                      </td>
-                      <td className="category-image-cell">
-                        <div className="category-image-frame">
-                          <img
-                            src={row.category_image || categoryPageData.imageSrc}
-                            alt={row.category_name}
-                            className="category-logo"
-                          />
-                        </div>
-                      </td>
-                      <td className="category-name-cell">
-                        <div className="category-name-block">
-                          <span className="category-name">{row.category_name}</span>
-                          <span className="category-meta">
-                            {products.length} product{products.length === 1 ? "" : "s"}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="category-products-cell">
-                        <div className="category-product-list">
-                          {products.length > 0 ? (
-                            products.map((product) => (
-                              <span className="category-product-pill" key={`${row.category_id}-${product.product_id}`}>
-                                {product.product_name}
-                              </span>
-                            ))
-                          ) : (
-                            <span className="category-empty-pill">No products</span>
-                          )}
-                        </div>
-                      </td>
-                      <td className="category-status-cell">
-                        <div className="category-status-wrap">
-                          <StatusSwitch
-                            current={normalizeCategoryStatus(row.category_status)}
-                            options={[
-                              { value: "active", label: "Active", badgeClass: "text-bg-success" },
-                              { value: "inactive", label: "Inactive", badgeClass: "text-bg-warning" }
-                            ]}
-                            activeValue="active"
-                            showCurrentOnly={true}
-                            interactive={true}
-                            disabled={isUpdatingStatus}
-                            onChange={(checked) => handleStatusChange(row, checked)}
-                          />
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+            <DataTable
+              columns={categoryColumns}
+              rows={visibleCategories}
+              keyField="category_id"
+              className="category-table"
+              wrapperClassName="category-table-inner"
+              customStyles={categoryTableStyles}
+            />
           )}
         </div>
       </div>
