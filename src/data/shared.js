@@ -66,21 +66,33 @@ export const filterDropdown = {
 };
 
 export const liveHoldDropdown = {
+  id: "productStatus",
   type: "dropdown",
   className: "btn-group me-2",
   buttonClass: "btn btn-primary dropdown-toggle",
   iconClass: "bi bi-hourglass-split",
   label: "Select Status",
-  items: [{ label: "On Hold" }, { label: "Live" }],
+  defaultValue: "all",
+  items: [
+    { label: "All Status", value: "all" },
+    { label: "On Hold", value: "hold" },
+    { label: "Live", value: "live" },
+  ],
 };
 
 export const activeHoldDropdown = {
+  id: "categoryStatus",
   type: "dropdown",
   className: "btn-group me-2",
   buttonClass: "btn btn-primary dropdown-toggle",
   iconClass: "bi bi-hourglass-split",
   label: "Select Status",
-  items: [{ label: "Active" }, { label: "Hold" }],
+  defaultValue: "all",
+  items: [
+    { label: "All Status", value: "all" },
+    { label: "Active", value: "active" },
+    { label: "Inactive", value: "inactive" },
+  ],
 };
 
 export const distributorDetail = {

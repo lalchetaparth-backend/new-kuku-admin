@@ -11,6 +11,26 @@ import {
   updateProductStatus,
 } from "../services/products";
 
+function createInitialToolbarState(toolbarGroups = []) {
+  return toolbarGroups.reduce((state, group) => {
+    if (group.type === "dropdown" && group.id) {
+      state[group.id] = group.defaultValue ?? "";
+    }
+
+    return state;
+  }, {});
+}
+
+function filterProductRows(rows, filters) {
+  const selectedStatus = filters.productStatus ?? "all";
+
+  if (selectedStatus === "all") {
+    return rows;
+  }
+
+  return rows.filter((row) => row.status?.current === selectedStatus);
+}
+
 function VariantInput({ id, name, label, placeholder }) {
   return (
     <div className="col-md-3">
@@ -132,6 +152,9 @@ function ProductsPage() {
   const [categoryOptions, setCategoryOptions] = useState([]);
   const [isLoadingCategories, setIsLoadingCategories] = useState(true);
   const [categoryErrorMessage, setCategoryErrorMessage] = useState("");
+  const [toolbarState, setToolbarState] = useState(() =>
+    createInitialToolbarState(productsPageData.toolbarGroups),
+  );
 
   const loadProductRows = async () => {
     if (!productsPageData.loadRows) {
@@ -343,6 +366,17 @@ function ProductsPage() {
     };
   });
 
+  const handleToolbarAction = (groupId, value) => {
+    if (!groupId) {
+      return;
+    }
+
+    setToolbarState((currentState) => ({
+      ...currentState,
+      [groupId]: value,
+    }));
+  };
+
   return (
     <>
       {statusToastMessage ? (
@@ -353,11 +387,15 @@ function ProductsPage() {
       <PageHeader
         title={productsPageData.title}
         toolbarGroups={productsPageData.toolbarGroups}
+        toolbarState={toolbarState}
+        onToolbarAction={handleToolbarAction}
       />
       <TabbedPage
         tabs={productsPageData.tabs}
         renderTabContent={(tab) => {
           if (tab.id === "products-list") {
+            const visibleRows = filterProductRows(rows, toolbarState);
+
             return (
               <>
                 {errorMessage ? (
@@ -382,15 +420,15 @@ function ProductsPage() {
                     <span>Updating status...</span>
                   </div>
                 ) : null}
-                {!isLoading && !errorMessage && rows.length === 0 ? (
+                {!isLoading && !errorMessage && visibleRows.length === 0 ? (
                   <div className="alert alert-light border" role="status">
                     {productsPageData.emptyMessage ?? "No records found."}
                   </div>
                 ) : null}
-                {rows.length > 0 ? (
+                {visibleRows.length > 0 ? (
                   <DataTable
                     columns={productsPageData.columns}
-                    rows={rows}
+                    rows={visibleRows}
                     onStatusChange={(rowData, _statusValue, checked) =>
                       handleStatusChange(rowData, checked)
                     }

@@ -3,7 +3,38 @@ import PageHeader from "../components/PageHeader";
 import StatusSwitch from "../components/StatusSwitch";
 import { categoryPageData } from "../data/categoryData";
 import useDocumentTitle from "../hooks/useDocumentTitle";
-import { addCategory, getCategories, updateCategoryStatus } from "../services/categories";
+import {
+  addCategory,
+  getCategories,
+  normalizeCategoryStatus,
+  updateCategoryStatus,
+} from "../services/categories";
+
+function getCategoryProducts(category) {
+  return Array.isArray(category?.products) ? category.products : [];
+}
+
+function createInitialToolbarState(toolbarGroups = []) {
+  return toolbarGroups.reduce((state, group) => {
+    if (group.type === "dropdown" && group.id) {
+      state[group.id] = group.defaultValue ?? "";
+    }
+
+    return state;
+  }, {});
+}
+
+function filterCategories(categories, filters) {
+  const selectedStatus = filters.categoryStatus ?? "all";
+
+  if (selectedStatus === "all") {
+    return categories;
+  }
+
+  return categories.filter(
+    (category) => normalizeCategoryStatus(category.category_status) === selectedStatus,
+  );
+}
 
 function CategoryPage() {
   useDocumentTitle(categoryPageData.documentTitle);
@@ -16,6 +47,9 @@ function CategoryPage() {
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
   const [statusToastMessage, setStatusToastMessage] = useState("");
   const [statusErrorMessage, setStatusErrorMessage] = useState("");
+  const [toolbarState, setToolbarState] = useState(() =>
+    createInitialToolbarState(categoryPageData.toolbarGroups),
+  );
 
   const fetchCategories = async () => {
     setIsLoading(true);
@@ -23,7 +57,7 @@ function CategoryPage() {
     try {
       const response = await getCategories();
       if (response.result === 1) {
-        setCategories(response.data);
+        setCategories(Array.isArray(response.data) ? response.data : []);
       } else {
         setError(response.msg || "Failed to fetch categories");
       }
@@ -121,6 +155,23 @@ function CategoryPage() {
     }
   };
 
+  const handleToolbarAction = (groupId, value) => {
+    if (!groupId) {
+      return;
+    }
+
+    setToolbarState((currentState) => ({
+      ...currentState,
+      [groupId]: value,
+    }));
+  };
+
+  const visibleCategories = filterCategories(categories, toolbarState);
+  const totalProducts = visibleCategories.reduce(
+    (count, category) => count + getCategoryProducts(category).length,
+    0,
+  );
+
   return (
     <>
       {statusToastMessage ? (
@@ -132,6 +183,8 @@ function CategoryPage() {
         <PageHeader
           title={categoryPageData.title}
           toolbarGroups={categoryPageData.toolbarGroups}
+          toolbarState={toolbarState}
+          onToolbarAction={handleToolbarAction}
         />
 
         <div className="category-form-section border-bottom">
@@ -193,6 +246,10 @@ function CategoryPage() {
             <div className="alert alert-danger m-3" role="alert">
               {error}
             </div>
+          ) : visibleCategories.length === 0 ? (
+            <div className="alert alert-light border m-3" role="status">
+              No categories found.
+            </div>
           ) : (
             <table className="table table-striped table-sm category-table">
               <thead>
@@ -204,53 +261,70 @@ function CategoryPage() {
                     Image
                   </th>
                   <th scope="col">Category</th>
-                  <th scope="col">Product ({categories.reduce((acc, cat) => acc + (cat.products?.length || 0), 0)})</th>
+                  <th scope="col">Product ({totalProducts})</th>
                   <th scope="col" className="category-status-column">
                     Status
                   </th>
                 </tr>
               </thead>
               <tbody>
-                {categories.map((row) => (
-                  <tr key={row.category_id}>
-                    <td className="category-id-cell">{row.category_id}</td>
-                    <td className="category-image-cell">
-                      <img
-                        src={row.category_image || categoryPageData.imageSrc}
-                        alt={row.category_name}
-                        className="category-logo"
-                      />
-                    </td>
-                    <td className="category-name-cell">{row.category_name}</td>
-                    <td className="category-products-cell">
-                      <div className="category-product-list">
-                        {row.products && row.products.length > 0 ? (
-                          row.products.map((product) => (
-                            <span className="category-product-pill" key={`${row.category_id}-${product.product_id}`}>
-                              {product.product_name}
-                            </span>
-                          ))
-                        ) : (
-                          <span className="text-muted small">No products</span>
-                        )}
-                      </div>
-                    </td>
-                    <td className="category-status-cell">
-                      <StatusSwitch
-                        current={row.category_status ? row.category_status.toLowerCase() : 'active'}
-                        options={[
-                          { value: "active", label: "Active", badgeClass: "text-bg-success" },
-                          { value: "inactive", label: "Inactive", badgeClass: "text-bg-warning" }
-                        ]}
-                        activeValue="active"
-                        showCurrentOnly={true}
-                        interactive={true}
-                        disabled={isUpdatingStatus}
-                        onChange={(checked) => handleStatusChange(row, checked)}
-                      />
-                    </td>
-                  </tr>
-                ))}
+                {visibleCategories.map((row) => {
+                  const products = getCategoryProducts(row);
+
+                  return (
+                    <tr key={row.category_id}>
+                      <td className="category-id-cell">
+                        <span className="category-id-badge">{row.category_id}</span>
+                      </td>
+                      <td className="category-image-cell">
+                        <div className="category-image-frame">
+                          <img
+                            src={row.category_image || categoryPageData.imageSrc}
+                            alt={row.category_name}
+                            className="category-logo"
+                          />
+                        </div>
+                      </td>
+                      <td className="category-name-cell">
+                        <div className="category-name-block">
+                          <span className="category-name">{row.category_name}</span>
+                          <span className="category-meta">
+                            {products.length} product{products.length === 1 ? "" : "s"}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="category-products-cell">
+                        <div className="category-product-list">
+                          {products.length > 0 ? (
+                            products.map((product) => (
+                              <span className="category-product-pill" key={`${row.category_id}-${product.product_id}`}>
+                                {product.product_name}
+                              </span>
+                            ))
+                          ) : (
+                            <span className="category-empty-pill">No products</span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="category-status-cell">
+                        <div className="category-status-wrap">
+                          <StatusSwitch
+                            current={normalizeCategoryStatus(row.category_status)}
+                            options={[
+                              { value: "active", label: "Active", badgeClass: "text-bg-success" },
+                              { value: "inactive", label: "Inactive", badgeClass: "text-bg-warning" }
+                            ]}
+                            activeValue="active"
+                            showCurrentOnly={true}
+                            interactive={true}
+                            disabled={isUpdatingStatus}
+                            onChange={(checked) => handleStatusChange(row, checked)}
+                          />
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           )}
