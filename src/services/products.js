@@ -61,6 +61,10 @@ function normalizeOfferStatus(product) {
   return "hold";
 }
 
+function isLiveProduct(product) {
+  return normalizeProductStatus(product?.product_status) === "live";
+}
+
 function normalizeSubmitStatus(status) {
   const normalizedStatus = String(status ?? "")
     .trim()
@@ -182,6 +186,20 @@ export async function getProductRows() {
   const products = Array.isArray(response?.data) ? response.data : [];
 
   return products.map(mapProductToRow);
+}
+
+export async function getProductOptions() {
+  const response = await apiRequest("/product/getProducts");
+  const products = Array.isArray(response?.data) ? response.data : [];
+  const liveProducts = products.filter(isLiveProduct);
+  const productsToUse = liveProducts.length > 0 ? liveProducts : products;
+
+  return productsToUse
+    .map((product) => ({
+      value: String(product.product_id),
+      label: formatValue(product.product_name),
+    }))
+    .filter((option) => option.label !== EMPTY_VALUE);
 }
 
 export async function getProductCategoryOptions() {

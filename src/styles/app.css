@@ -61,6 +61,22 @@ body {
   border-color: #a7f3d0;
 }
 
+.table-image-frame {
+  width: 4.5rem;
+  height: 4.5rem;
+  overflow: hidden;
+  border-radius: 0.9rem;
+  border: 1px solid #dbe3ef;
+  background: linear-gradient(135deg, #f8fafc, #eef4ff);
+}
+
+.table-image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
 .modal-backdrop {
   cursor: pointer;
 }

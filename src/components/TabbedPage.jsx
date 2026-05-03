@@ -1,7 +1,24 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-function TabbedPage({ tabs, renderTabContent }) {
-  const [activeTab, setActiveTab] = useState(tabs[0]?.id);
+function TabbedPage({ tabs, activeTabId, onTabChange, renderTabContent }) {
+  const [internalActiveTab, setInternalActiveTab] = useState(tabs[0]?.id);
+  const resolvedActiveTab = activeTabId ?? internalActiveTab;
+
+  useEffect(() => {
+    if (activeTabId !== undefined) {
+      return;
+    }
+
+    setInternalActiveTab(tabs[0]?.id);
+  }, [activeTabId, tabs]);
+
+  const handleTabChange = (tabId) => {
+    if (activeTabId === undefined) {
+      setInternalActiveTab(tabId);
+    }
+
+    onTabChange?.(tabId);
+  };
 
   return (
     <>
@@ -9,11 +26,11 @@ function TabbedPage({ tabs, renderTabContent }) {
         {tabs.map((tab) => (
           <li className="nav-item" role="presentation" key={tab.id}>
             <button
-              className={`nav-link rounded-pill ${activeTab === tab.id ? "active" : ""}`}
+              className={`nav-link rounded-pill ${resolvedActiveTab === tab.id ? "active" : ""}`}
               type="button"
               role="tab"
-              aria-selected={activeTab === tab.id}
-              onClick={() => setActiveTab(tab.id)}
+              aria-selected={resolvedActiveTab === tab.id}
+              onClick={() => handleTabChange(tab.id)}
             >
               {tab.label}
             </button>
@@ -24,7 +41,7 @@ function TabbedPage({ tabs, renderTabContent }) {
         {tabs.map((tab) => (
           <div
             key={tab.id}
-            className={`tab-pane fade ${activeTab === tab.id ? "show active" : ""}`}
+            className={`tab-pane fade ${resolvedActiveTab === tab.id ? "show active" : ""}`}
             role="tabpanel"
             tabIndex={0}
           >

@@ -109,6 +109,46 @@ export const productsPageData = {
       colClass: "col-md-2",
     },
   ],
+  contentFields: [
+    {
+      type: "textarea",
+      name: "product_description",
+      label: "Product Description",
+      placeholder: "Product Description",
+      colClass: "col-md-4",
+      height: 125,
+    },
+    {
+      type: "textarea",
+      name: "ingredients",
+      label: "Ingredients",
+      placeholder: "Ingredients",
+      colClass: "col-md-4",
+      height: 125,
+    },
+    {
+      type: "textarea",
+      name: "other_information",
+      label: "Other Information",
+      placeholder: "Other Information",
+      colClass: "col-md-4",
+      height: 125,
+    },
+    {
+      type: "file",
+      name: "nutrition_facts",
+      label: "Nutrition Facts",
+      colClass: "col-md-4",
+      multiple: true,
+    },
+    {
+      type: "file",
+      name: "perks_icon",
+      label: "Perks Icon",
+      colClass: "col-md-8",
+      multiple: true,
+    },
+  ],
   variants: [createProductVariant(1), createProductVariant(2)],
   taxFields: [
     {

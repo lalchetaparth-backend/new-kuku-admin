@@ -27,6 +27,9 @@ function createInitialFormState(tabs) {
       isSubmitting: false,
       successMessage: "",
       errorMessage: "",
+      fieldOptions: {},
+      fieldLoading: {},
+      fieldErrorMessages: {},
     };
 
     return state;
@@ -103,10 +106,17 @@ function updateStatusRow(rows, targetBlogId, nextStatus) {
   });
 }
 
+function getFieldsWithOptionLoaders(tab) {
+  return (tab.formFields ?? []).filter(
+    (field) => typeof field.loadOptions === "function" && field.name,
+  );
+}
+
 function TabbedResourcePage({ pageKey }) {
   const page = tabbedPages[pageKey];
   const [tabState, setTabState] = useState(() => createInitialTabState(page.tabs));
   const [formState, setFormState] = useState(() => createInitialFormState(page.tabs));
+  const [activeTabId, setActiveTabId] = useState(page.tabs[0]?.id);
   const [toolbarState, setToolbarState] = useState(() =>
     createInitialToolbarState(page.toolbarGroups),
   );
@@ -158,15 +168,103 @@ function TabbedResourcePage({ pageKey }) {
     }
   };
 
+  const loadFormOptionsForTab = async (tab) => {
+    const fields = getFieldsWithOptionLoaders(tab);
+
+    if (fields.length === 0) {
+      return;
+    }
+
+    setFormState((currentState) => {
+      const currentTabState = currentState[tab.id] ?? {};
+      const nextFieldLoading = { ...(currentTabState.fieldLoading ?? {}) };
+      const nextFieldErrorMessages = {
+        ...(currentTabState.fieldErrorMessages ?? {}),
+      };
+
+      fields.forEach((field) => {
+        nextFieldLoading[field.name] = true;
+        nextFieldErrorMessages[field.name] = "";
+      });
+
+      return {
+        ...currentState,
+        [tab.id]: {
+          isSubmitting: currentTabState.isSubmitting ?? false,
+          successMessage: currentTabState.successMessage ?? "",
+          errorMessage: currentTabState.errorMessage ?? "",
+          fieldOptions: currentTabState.fieldOptions ?? {},
+          fieldLoading: nextFieldLoading,
+          fieldErrorMessages: nextFieldErrorMessages,
+        },
+      };
+    });
+
+    const fieldResults = await Promise.all(
+      fields.map(async (field) => {
+        try {
+          const options = await field.loadOptions();
+
+          return {
+            fieldName: field.name,
+            options,
+            errorMessage: "",
+          };
+        } catch (error) {
+          return {
+            fieldName: field.name,
+            options: [],
+            errorMessage:
+              error instanceof Error ? error.message : "Unable to load options.",
+          };
+        }
+      }),
+    );
+
+    setFormState((currentState) => {
+      const currentTabState = currentState[tab.id] ?? {};
+      const nextFieldOptions = { ...(currentTabState.fieldOptions ?? {}) };
+      const nextFieldLoading = { ...(currentTabState.fieldLoading ?? {}) };
+      const nextFieldErrorMessages = {
+        ...(currentTabState.fieldErrorMessages ?? {}),
+      };
+
+      fieldResults.forEach(({ fieldName, options, errorMessage }) => {
+        nextFieldOptions[fieldName] = options;
+        nextFieldLoading[fieldName] = false;
+        nextFieldErrorMessages[fieldName] = errorMessage;
+      });
+
+      return {
+        ...currentState,
+        [tab.id]: {
+          isSubmitting: currentTabState.isSubmitting ?? false,
+          successMessage: currentTabState.successMessage ?? "",
+          errorMessage: currentTabState.errorMessage ?? "",
+          fieldOptions: nextFieldOptions,
+          fieldLoading: nextFieldLoading,
+          fieldErrorMessages: nextFieldErrorMessages,
+        },
+      };
+    });
+  };
+
   useEffect(() => {
     setTabState(createInitialTabState(page.tabs));
     setFormState(createInitialFormState(page.tabs));
+    setActiveTabId(page.tabs[0]?.id);
     setToolbarState(createInitialToolbarState(page.toolbarGroups));
 
     page.tabs
       .filter((tab) => tab.loadRows)
       .forEach((tab) => {
         loadRowsForTab(tab);
+      });
+
+    page.tabs
+      .filter((tab) => getFieldsWithOptionLoaders(tab).length > 0)
+      .forEach((tab) => {
+        loadFormOptionsForTab(tab);
       });
   }, [page]);
 
@@ -207,6 +305,7 @@ function TabbedResourcePage({ pageKey }) {
     setFormState((currentState) => ({
       ...currentState,
       [tab.id]: {
+        ...(currentState[tab.id] ?? {}),
         isSubmitting: true,
         successMessage: "",
         errorMessage: "",
@@ -221,6 +320,7 @@ function TabbedResourcePage({ pageKey }) {
       setFormState((currentState) => ({
         ...currentState,
         [tab.id]: {
+          ...(currentState[tab.id] ?? {}),
           isSubmitting: false,
           successMessage:
             (typeof response === "object" && response !== null && response.msg) ||
@@ -229,15 +329,20 @@ function TabbedResourcePage({ pageKey }) {
         },
       }));
 
-      page.tabs
+      const tabsToRefresh = page.tabs
         .filter((pageTab) => tab.refreshTabsOnSuccess?.includes(pageTab.id))
-        .forEach((pageTab) => {
-          loadRowsForTab(pageTab);
-        });
+        .map((pageTab) => loadRowsForTab(pageTab));
+
+      await Promise.all(tabsToRefresh);
+
+      if (tab.redirectTabOnSuccess) {
+        setActiveTabId(tab.redirectTabOnSuccess);
+      }
     } catch (error) {
       setFormState((currentState) => ({
         ...currentState,
         [tab.id]: {
+          ...(currentState[tab.id] ?? {}),
           isSubmitting: false,
           successMessage: "",
           errorMessage:
@@ -314,6 +419,8 @@ function TabbedResourcePage({ pageKey }) {
       />
       <TabbedPage
         tabs={page.tabs}
+        activeTabId={activeTabId}
+        onTabChange={setActiveTabId}
         renderTabContent={(tab) => {
           if (tab.columns) {
             const state = tabState[tab.id] ?? {
@@ -367,21 +474,58 @@ function TabbedResourcePage({ pageKey }) {
             );
           }
 
+          const tabFormState = formState[tab.id] ?? {
+            isSubmitting: false,
+            successMessage: "",
+            errorMessage: "",
+            fieldOptions: {},
+            fieldLoading: {},
+            fieldErrorMessages: {},
+          };
+          const resolvedFields = (tab.formFields ?? []).map((field) => {
+            if (typeof field.loadOptions !== "function" || !field.name) {
+              return field;
+            }
+
+            const loadedOptions = tabFormState.fieldOptions[field.name] ?? field.options ?? [];
+            const isFieldLoading = Boolean(tabFormState.fieldLoading[field.name]);
+
+            return {
+              ...field,
+              options: loadedOptions,
+              placeholderOption: isFieldLoading
+                ? (field.loadingPlaceholderOption ?? "Loading options...")
+                : field.placeholderOption,
+              disabled:
+                Boolean(field.disabled) ||
+                isFieldLoading ||
+                (field.disableWhenEmptyOptions === true && loadedOptions.length === 0),
+            };
+          });
+          const formFieldErrors = Object.values(
+            tabFormState.fieldErrorMessages ?? {},
+          ).filter(Boolean);
+
           return (
             <form onSubmit={(event) => handleFormSubmit(tab, event)}>
-              {(formState[tab.id]?.successMessage ?? "") ? (
+              {tabFormState.successMessage ? (
                 <div className="alert alert-success" role="status">
-                  {formState[tab.id].successMessage}
+                  {tabFormState.successMessage}
                 </div>
               ) : null}
-              {(formState[tab.id]?.errorMessage ?? "") ? (
+              {tabFormState.errorMessage ? (
                 <div className="alert alert-danger" role="alert">
-                  Failed to submit form. {formState[tab.id].errorMessage}
+                  Failed to submit form. {tabFormState.errorMessage}
+                </div>
+              ) : null}
+              {formFieldErrors.length > 0 ? (
+                <div className="alert alert-danger" role="alert">
+                  Failed to load form options. {formFieldErrors.join(" ")}
                 </div>
               ) : null}
               <div className="row g-2">
-                <FormFields fields={tab.formFields} />
-                {formState[tab.id]?.isSubmitting ? (
+                <FormFields fields={resolvedFields} />
+                {tabFormState.isSubmitting ? (
                   <div className="col-md-12">
                     <div className="d-flex align-items-center gap-2 text-secondary small">
                       <div className="spinner-border spinner-border-sm" role="status" />

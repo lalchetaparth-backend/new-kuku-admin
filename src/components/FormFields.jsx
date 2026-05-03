@@ -1,3 +1,9 @@
+function handleFieldInput(field, event) {
+  if (field.transform === "uppercaseAlphaNumeric") {
+    event.target.value = event.target.value.replace(/[^a-zA-Z0-9]/g, "").toUpperCase();
+  }
+}
+
 function renderField(field) {
   if (field.type === "text" || field.type === "date") {
     return (
@@ -12,6 +18,13 @@ function renderField(field) {
             defaultValue={field.defaultValue ?? ""}
             required={field.required ?? false}
             disabled={field.disabled ?? false}
+            pattern={field.pattern}
+            title={field.title}
+            maxLength={field.maxLength}
+            inputMode={field.inputMode}
+            autoComplete={field.autoComplete}
+            onInput={(event) => handleFieldInput(field, event)}
+            style={field.inputStyle}
           />
           <label htmlFor={field.name}>{field.label}</label>
         </div>

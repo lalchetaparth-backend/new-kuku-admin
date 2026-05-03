@@ -1,6 +1,13 @@
 export const productPreviewImage =
   "/assets/products/dry-chapti-kachori/1 chapti kachori.jpg";
 
+export const createTableImage = (src, alt, config = {}) => ({
+  type: "tableImage",
+  src,
+  alt,
+  ...config,
+});
+
 export const createStatusSwitch = (current, options, config = {}) => ({
   type: "statusSwitch",
   current,

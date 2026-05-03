@@ -453,9 +453,7 @@ function ProductsPage() {
               <div className="row g-2">
                 <FormFields fields={primaryFields} />
 
-                <div className="col-md-12">
-                  <div className="mb-3">Custome editor space</div>
-                </div>
+                <FormFields fields={productsPageData.contentFields} />
 
                 {variants.map((variant, index) => (
                   <VariantRow

@@ -1,5 +1,6 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { navSections } from "../data/shared";
+import { clearAdminSession } from "../services/auth";
 import Icon from "./Icon";
 
 function closeMobileSidebar() {
@@ -39,6 +40,15 @@ function renderLabel(item) {
 }
 
 function Sidebar() {
+  const navigate = useNavigate();
+
+  const handleSignOut = (event) => {
+    event.preventDefault();
+    clearAdminSession();
+    closeMobileSidebar();
+    navigate("/", { replace: true });
+  };
+
   return (
     <div className="sidebar border border-right col-md-3 col-lg-2 p-0 bg-body-tertiary">
       <div
@@ -90,7 +100,7 @@ function Sidebar() {
               <a
                 className="nav-link d-flex align-items-center gap-2"
                 href="#"
-                onClick={(event) => event.preventDefault()}
+                onClick={handleSignOut}
               >
                 <Icon symbol="door-closed" />
                 Sign out

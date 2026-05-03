@@ -126,6 +126,18 @@ function renderCellContent(
     );
   }
 
+  if (value?.type === "tableImage") {
+    return (
+      <div className={value.frameClassName ?? "table-image-frame"}>
+        <img
+          src={value.src}
+          alt={value.alt ?? column.header ?? "Table image"}
+          className={value.imageClassName ?? "table-image"}
+        />
+      </div>
+    );
+  }
+
   if (value?.type === "iconLink") {
     return (
       <a href={value.href} onClick={(event) => event.preventDefault()}>
