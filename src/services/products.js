@@ -1,4 +1,4 @@
-import { createStatusSwitch } from "../data/shared";
+import { createDeleteLink, createStatusSwitch } from "../data/shared";
 import { apiRequest } from "../lib/api";
 
 const EMPTY_VALUE = "-";
@@ -122,21 +122,62 @@ function isActiveCategory(category) {
   return normalizedStatus === "active" || normalizedStatus === "live";
 }
 
-function formatCategory(product) {
-  if (product.product_type) {
-    return formatValue(product.product_type);
+async function getCategoriesData() {
+  const response = await apiRequest("/product/getCategories");
+
+  return Array.isArray(response?.data) ? response.data : [];
+}
+
+function normalizeLookupKey(value) {
+  if (value === null || value === undefined) {
+    return "";
   }
 
+  return String(value).trim();
+}
+
+function buildCategoryNameLookup(categories) {
+  return categories.reduce((lookup, category) => {
+    const categoryId = normalizeLookupKey(category.category_id ?? category.id);
+    const categoryName = formatValue(category.category_name ?? category.name);
+
+    if (categoryId && categoryName !== EMPTY_VALUE) {
+      lookup.set(categoryId, categoryName);
+    }
+
+    return lookup;
+  }, new Map());
+}
+
+function resolveCategoryLookupValue(value, categoryNameById) {
+  const lookupKey = normalizeLookupKey(value);
+
+  if (!lookupKey) {
+    return EMPTY_VALUE;
+  }
+
+  return categoryNameById.get(lookupKey) ?? formatValue(value);
+}
+
+function formatCategory(product, categoryNameById = new Map()) {
   if (product.category_name) {
     return formatValue(product.category_name);
+  }
+
+  if (product.category?.category_name) {
+    return formatValue(product.category.category_name);
   }
 
   if (product.category?.name) {
     return formatValue(product.category.name);
   }
 
+  if (product.product_type) {
+    return resolveCategoryLookupValue(product.product_type, categoryNameById);
+  }
+
   if (product.category_id !== null && product.category_id !== undefined) {
-    return String(product.category_id);
+    return resolveCategoryLookupValue(product.category_id, categoryNameById);
   }
 
   return EMPTY_VALUE;
@@ -154,12 +195,12 @@ function formatWeight(product) {
   return EMPTY_VALUE;
 }
 
-function mapProductToRow(product, index) {
+function mapProductToRow(product, index, categoryNameById) {
   return {
     id: index + 1,
     productName: formatValue(product.product_name),
     weight: formatWeight(product),
-    category: formatCategory(product),
+    category: formatCategory(product, categoryNameById),
     price: formatPrice(product.product_price),
     mrp: formatPrice(product.product_sell_price),
     offerStatus: createStatusSwitch(
@@ -175,6 +216,7 @@ function mapProductToRow(product, index) {
         showCurrentOnly: true,
       },
     ),
+    delete: createDeleteLink(),
     productId: product.product_id,
     thumbnailImage: product.thumbnail_image,
     variants: Array.isArray(product.variant_data) ? product.variant_data : [],
@@ -182,10 +224,16 @@ function mapProductToRow(product, index) {
 }
 
 export async function getProductRows() {
-  const response = await apiRequest("/product/getProducts");
-  const products = Array.isArray(response?.data) ? response.data : [];
+  const [productsResponse, categories] = await Promise.all([
+    apiRequest("/product/getProducts"),
+    getCategoriesData().catch(() => []),
+  ]);
+  const products = Array.isArray(productsResponse?.data) ? productsResponse.data : [];
+  const categoryNameById = buildCategoryNameLookup(categories);
 
-  return products.map(mapProductToRow);
+  return products.map((product, index) =>
+    mapProductToRow(product, index, categoryNameById),
+  );
 }
 
 export async function getProductOptions() {
@@ -203,15 +251,14 @@ export async function getProductOptions() {
 }
 
 export async function getProductCategoryOptions() {
-  const response = await apiRequest("/product/getCategories");
-  const categories = Array.isArray(response?.data) ? response.data : [];
+  const categories = await getCategoriesData();
   const activeCategories = categories.filter(isActiveCategory);
   const categoriesToUse =
     activeCategories.length > 0 ? activeCategories : categories;
 
   return categoriesToUse.map((category) => ({
-    value: String(category.category_id),
-    label: formatValue(category.category_name),
+    value: String(category.category_id ?? category.id ?? ""),
+    label: formatValue(category.category_name ?? category.name),
   }));
 }
 
@@ -224,6 +271,19 @@ export async function updateProductStatus(productId, status) {
   return apiRequest("/product/updateProductStatus", {
     method: "POST",
     body: payload,
+  });
+}
+
+export async function deleteProduct(productId) {
+  const normalizedProductId = String(productId ?? "").trim();
+
+  if (!normalizedProductId) {
+    throw new Error("Product id is missing.");
+  }
+
+  return apiRequest("/product/deleteProduct", {
+    method: "DELETE",
+    body: JSON.stringify({ product_id: Number(normalizedProductId) }),
   });
 }
 

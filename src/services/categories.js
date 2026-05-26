@@ -49,3 +49,16 @@ export async function addCategory(formData) {
     body: payload,
   });
 }
+
+export async function deleteCategory(categoryId) {
+  const normalizedCategoryId = String(categoryId ?? "").trim();
+
+  if (!normalizedCategoryId) {
+    throw new Error("Category id is missing.");
+  }
+
+  return apiRequest("/product/deleteCategory", {
+    method: "DELETE",
+    body: JSON.stringify({ category_id: Number(normalizedCategoryId) }),
+  });
+}

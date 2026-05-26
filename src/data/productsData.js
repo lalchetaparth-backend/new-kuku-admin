@@ -35,6 +35,7 @@ export const productsPageData = {
     { key: "mrp", header: "MRP" },
     { key: "offerStatus", header: "Offer Status" },
     { key: "status", header: "Status" },
+    { key: "delete", header: "Delete", width: "7rem", grow: 0 },
   ],
   rows: [],
   loadRows: getProductRows,

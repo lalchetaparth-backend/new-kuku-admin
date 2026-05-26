@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import DataTable from "../components/DataTable";
 import FormFields from "../components/FormFields";
 import PageHeader from "../components/PageHeader";
+import Pagination from "../components/Pagination";
 import TabbedPage from "../components/TabbedPage";
 import { tabbedPages } from "../data/tabbedPages";
 import useDocumentTitle from "../hooks/useDocumentTitle";
@@ -404,6 +405,67 @@ function TabbedResourcePage({ pageKey }) {
     }
   };
 
+  const handleTableAction = async (tab, action, row) => {
+    if (action !== "delete" || !tab.deleteRow) {
+      return;
+    }
+
+    const rowIdKey = tab.deleteRowIdKey ?? "id";
+    const rowId = row[rowIdKey];
+
+    if (rowId === undefined || rowId === null || String(rowId).trim() === "") {
+      setTabState((currentState) => ({
+        ...currentState,
+        [tab.id]: {
+          ...(currentState[tab.id] ?? {}),
+          statusMessage: "",
+          statusErrorMessage: "Unable to delete record. Missing identifier.",
+        },
+      }));
+
+      return;
+    }
+
+    setTabState((currentState) => ({
+      ...currentState,
+      [tab.id]: {
+        ...(currentState[tab.id] ?? {}),
+        isUpdatingStatus: true,
+        statusMessage: "",
+        statusErrorMessage: "",
+      },
+    }));
+
+    try {
+      const response = await tab.deleteRow(rowId, row);
+
+      setTabState((currentState) => ({
+        ...currentState,
+        [tab.id]: {
+          ...(currentState[tab.id] ?? {}),
+          isUpdatingStatus: false,
+          statusMessage:
+            (typeof response === "object" && response !== null && response.msg) ||
+            "Deleted successfully.",
+          statusErrorMessage: "",
+        },
+      }));
+
+      await loadRowsForTab(tab);
+    } catch (error) {
+      setTabState((currentState) => ({
+        ...currentState,
+        [tab.id]: {
+          ...(currentState[tab.id] ?? {}),
+          isUpdatingStatus: false,
+          statusMessage: "",
+          statusErrorMessage:
+            error instanceof Error ? error.message : "Unable to delete record.",
+        },
+      }));
+    }
+  };
+
   return (
     <>
       {statusToastMessage ? (
@@ -439,7 +501,7 @@ function TabbedResourcePage({ pageKey }) {
                 ) : null}
                 {state.statusErrorMessage ? (
                   <div className="alert alert-danger" role="alert">
-                    Failed to update status. {state.statusErrorMessage}
+                    Action failed. {state.statusErrorMessage}
                   </div>
                 ) : null}
                 {state.isLoading ? (
@@ -451,7 +513,7 @@ function TabbedResourcePage({ pageKey }) {
                 {state.isUpdatingStatus ? (
                   <div className="d-flex align-items-center gap-2 text-secondary small mb-3">
                     <div className="spinner-border spinner-border-sm" role="status" />
-                    <span>Updating status...</span>
+                    <span>Processing...</span>
                   </div>
                 ) : null}
                 {!state.isLoading &&
@@ -462,13 +524,22 @@ function TabbedResourcePage({ pageKey }) {
                   </div>
                 ) : null}
                 {visibleRows.length > 0 ? (
-                  <DataTable
-                    columns={tab.columns}
-                    rows={visibleRows}
-                    onStatusChange={(rowData, _statusValue, checked) =>
-                      handleStatusChange(tab, rowData, checked)
-                    }
-                  />
+                  <>
+                    <DataTable
+                      columns={tab.columns}
+                      rows={visibleRows}
+                      wrapperClassName={
+                        pageKey === "blogs" && tab.id === "blogs-list" ? "mb-3" : ""
+                      }
+                      onStatusChange={(rowData, _statusValue, checked) =>
+                        handleStatusChange(tab, rowData, checked)
+                      }
+                      onAction={(action, rowData) =>
+                        handleTableAction(tab, action, rowData)
+                      }
+                    />
+                    {tab.hidePagination ? null : <Pagination />}
+                  </>
                 ) : null}
               </>
             );

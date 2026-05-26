@@ -32,6 +32,12 @@ export const createIconLink = (iconClass, href = "#") => ({
   href,
 });
 
+export const createDeleteLink = (action = "delete") => ({
+  type: "deleteLink",
+  action,
+  label: "Delete",
+});
+
 export const exportToolbarGroup = {
   type: "buttons",
   className: "btn-group me-2",
@@ -155,8 +161,18 @@ export const navSections = [
         symbol: "cart",
       },
       {
+        path: "/marquee",
+        labelLines: ["Marquee"],
+        iconClass: "bi bi-pencil-square",
+      },
+      {
         path: "/blogs",
         labelLines: ["Blogs"],
+        iconClass: "bi bi-pencil-square",
+      },
+      {
+        path: "/blogs-offer",
+        labelLines: ["Blogs Advertisement"],
         iconClass: "bi bi-pencil-square",
       },
       {

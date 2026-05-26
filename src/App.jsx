@@ -1,10 +1,12 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 import AdminLayout from "./components/AdminLayout";
 import ProtectedRoute from "./components/ProtectedRoute";
+import BlogsOfferPage from "./pages/BlogsOfferPage";
 import CategoryPage from "./pages/CategoryPage";
 import DashboardPage from "./pages/DashboardPage";
 import DetailRecordsPage from "./pages/DetailRecordsPage";
 import LoginPage from "./pages/LoginPage";
+import MarqueePage from "./pages/MarqueePage";
 import ProductsPage from "./pages/ProductsPage";
 import ReportsPage from "./pages/ReportsPage";
 import SimpleTablePage from "./pages/SimpleTablePage";
@@ -20,7 +22,9 @@ function App() {
           <Route path="/orders" element={<SimpleTablePage pageKey="orders" />} />
           <Route path="/categories" element={<CategoryPage />} />
           <Route path="/products" element={<ProductsPage />} />
+          <Route path="/marquee" element={<MarqueePage />} />
           <Route path="/blogs" element={<TabbedResourcePage pageKey="blogs" />} />
+          <Route path="/blogs-offer" element={<BlogsOfferPage />} />
           <Route
             path="/distributors"
             element={<DetailRecordsPage pageKey="distributors" />}

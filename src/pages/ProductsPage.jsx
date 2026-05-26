@@ -2,11 +2,13 @@ import { useEffect, useState } from "react";
 import DataTable from "../components/DataTable";
 import FormFields from "../components/FormFields";
 import PageHeader from "../components/PageHeader";
+import Pagination from "../components/Pagination";
 import TabbedPage from "../components/TabbedPage";
 import { createProductVariant, productsPageData } from "../data/productsData";
 import useDocumentTitle from "../hooks/useDocumentTitle";
 import {
   addProduct,
+  deleteProduct,
   getProductCategoryOptions,
   updateProductStatus,
 } from "../services/products";
@@ -323,6 +325,38 @@ function ProductsPage() {
     }
   };
 
+  const handleAction = async (action, row) => {
+    if (action !== "delete") {
+      return;
+    }
+
+    if (row.productId === undefined || row.productId === null) {
+      setStatusErrorMessage("Unable to delete product. Missing product id.");
+      return;
+    }
+
+    setIsUpdatingStatus(true);
+    setStatusToastMessage("");
+    setStatusErrorMessage("");
+
+    try {
+      const response = await deleteProduct(row.productId);
+
+      setStatusToastMessage(
+        (typeof response === "object" && response !== null && response.msg) ||
+          (typeof response === "object" && response !== null && response.message) ||
+          "Product deleted successfully.",
+      );
+      await loadProductRows();
+    } catch (error) {
+      setStatusErrorMessage(
+        error instanceof Error ? error.message : "Unable to delete product.",
+      );
+    } finally {
+      setIsUpdatingStatus(false);
+    }
+  };
+
   const handleProductSubmit = async (event) => {
     event.preventDefault();
 
@@ -426,13 +460,17 @@ function ProductsPage() {
                   </div>
                 ) : null}
                 {visibleRows.length > 0 ? (
-                  <DataTable
-                    columns={productsPageData.columns}
-                    rows={visibleRows}
-                    onStatusChange={(rowData, _statusValue, checked) =>
-                      handleStatusChange(rowData, checked)
-                    }
-                  />
+                  <>
+                    <DataTable
+                      columns={productsPageData.columns}
+                      rows={visibleRows}
+                      onStatusChange={(rowData, _statusValue, checked) =>
+                        handleStatusChange(rowData, checked)
+                      }
+                      onAction={handleAction}
+                    />
+                    <Pagination />
+                  </>
                 ) : null}
               </>
             );

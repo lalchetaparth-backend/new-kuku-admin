@@ -1,4 +1,4 @@
-import { createStatusSwitch } from "../data/shared";
+import { createDeleteLink, createStatusSwitch } from "../data/shared";
 import { apiRequest } from "../lib/api";
 
 const EMPTY_VALUE = "-";
@@ -124,6 +124,7 @@ function mapBlogToRow(blog, index) {
         showCurrentOnly: true,
       },
     ),
+    delete: createDeleteLink(),
     blogId: blog.blog_id,
     file: blog.file,
   };
@@ -175,4 +176,17 @@ export async function updateBlogStatus(blogId, status) {
   });
 
   return normalizeStatusMessage(response);
+}
+
+export async function deleteBlog(blogId) {
+  const normalizedBlogId = String(blogId ?? "").trim();
+
+  if (!normalizedBlogId) {
+    throw new Error("Blog id is missing.");
+  }
+
+  return apiRequest("/admin/deleteBlog", {
+    method: "DELETE",
+    body: JSON.stringify({ blog_id: Number(normalizedBlogId) }),
+  });
 }

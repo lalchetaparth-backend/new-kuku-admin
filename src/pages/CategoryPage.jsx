@@ -1,15 +1,18 @@
 import { useEffect, useState } from "react";
 import DataTable from "../components/DataTable";
 import PageHeader from "../components/PageHeader";
+import Pagination from "../components/Pagination";
 import StatusSwitch from "../components/StatusSwitch";
 import { categoryPageData } from "../data/categoryData";
 import useDocumentTitle from "../hooks/useDocumentTitle";
 import {
   addCategory,
+  deleteCategory,
   getCategories,
   normalizeCategoryStatus,
   updateCategoryStatus,
 } from "../services/categories";
+import { createDeleteLink } from "../data/shared";
 
 function getCategoryProducts(category) {
   return Array.isArray(category?.products) ? category.products : [];
@@ -157,6 +160,38 @@ function CategoryPage() {
     } catch (err) {
       setStatusErrorMessage(
         err instanceof Error ? err.message : "Unable to update status."
+      );
+    } finally {
+      setIsUpdatingStatus(false);
+    }
+  };
+
+  const handleAction = async (action, row) => {
+    if (action !== "delete") {
+      return;
+    }
+
+    if (!row.category_id) {
+      setStatusErrorMessage("Unable to delete category. Missing category id.");
+      return;
+    }
+
+    setIsUpdatingStatus(true);
+    setStatusToastMessage("");
+    setStatusErrorMessage("");
+
+    try {
+      const response = await deleteCategory(row.category_id);
+
+      setStatusToastMessage(
+        (typeof response === "object" && response !== null && response.msg) ||
+          (typeof response === "object" && response !== null && response.message) ||
+          "Category deleted successfully."
+      );
+      await fetchCategories();
+    } catch (err) {
+      setStatusErrorMessage(
+        err instanceof Error ? err.message : "Unable to delete category."
       );
     } finally {
       setIsUpdatingStatus(false);
@@ -312,6 +347,13 @@ function CategoryPage() {
         </div>
       ),
     },
+    {
+      key: "delete",
+      header: "Delete",
+      width: "7rem",
+      grow: 0,
+      cell: () => createDeleteLink(),
+    },
   ];
 
   return (
@@ -393,14 +435,18 @@ function CategoryPage() {
               No categories found.
             </div>
           ) : (
-            <DataTable
-              columns={categoryColumns}
-              rows={visibleCategories}
-              keyField="category_id"
-              className="category-table"
+            <>
+              <DataTable
+                columns={categoryColumns}
+                rows={visibleCategories}
+                keyField="category_id"
+                className="category-table"
               wrapperClassName="category-table-inner"
               customStyles={categoryTableStyles}
+              onAction={handleAction}
             />
+              <Pagination className="mt-3" />
+            </>
           )}
         </div>
       </div>

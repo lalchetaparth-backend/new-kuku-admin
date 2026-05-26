@@ -146,6 +146,19 @@ function renderCellContent(
     );
   }
 
+  if (value?.type === "deleteLink") {
+    return (
+      <button
+        type="button"
+        className="delete-link"
+        onClick={() => onAction?.(value.action, row)}
+      >
+        <i className="bi bi-trash" />
+        <span>{value.label ?? "Delete"}</span>
+      </button>
+    );
+  }
+
   if (value?.type === "action") {
     return (
       <button

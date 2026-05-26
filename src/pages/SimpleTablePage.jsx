@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import DataTable from "../components/DataTable";
 import PageHeader from "../components/PageHeader";
+import Pagination from "../components/Pagination";
 import { simpleTablePages } from "../data/simpleTablePages";
 import useDocumentTitle from "../hooks/useDocumentTitle";
 
@@ -77,7 +78,12 @@ function SimpleTablePage({ pageKey }) {
           {page.emptyMessage ?? "No records found."}
         </div>
       ) : null}
-      {rows.length > 0 ? <DataTable columns={page.columns} rows={rows} /> : null}
+      {rows.length > 0 ? (
+        <>
+          <DataTable columns={page.columns} rows={rows} />
+          <Pagination />
+        </>
+      ) : null}
     </>
   );
 }

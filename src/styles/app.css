@@ -37,6 +37,26 @@ body {
   color: #000000;
 }
 
+.delete-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #000000;
+  font: inherit;
+  line-height: 1.2;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.delete-link:hover,
+.delete-link:focus {
+  color: #ff0000;
+  text-decoration: none;
+}
+
 .app-toast-container {
   position: fixed;
   top: 1rem;
@@ -221,12 +241,12 @@ body {
 .category-product-pill {
   display: inline-flex;
   align-items: center;
-  min-height: 1.9rem;
+  min-height: 1rem;
   padding: 0.3rem 0.7rem;
   border-radius: 999px;
   background: #1f2937;
   color: #fff;
-  font-size: 0.78rem;
+  font-size: 0.5rem;
   font-weight: 700;
   line-height: 1.2;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);

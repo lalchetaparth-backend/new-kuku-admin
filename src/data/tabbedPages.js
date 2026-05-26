@@ -3,8 +3,8 @@ import {
   exportToolbarGroup,
   productPreviewImage,
 } from "./shared";
-import { addBlog, getBlogRows, updateBlogStatus } from "../services/blogs";
-import { getModalRows } from "../services/modals";
+import { addBlog, deleteBlog, getBlogRows, updateBlogStatus } from "../services/blogs";
+import { addModal, deleteModal, getModalRows } from "../services/modals";
 import { addOffer, getOfferRows } from "../services/offers";
 import { getProductOptions } from "../services/products";
 
@@ -48,10 +48,13 @@ export const tabbedPages = {
           { key: "date", header: "Date" },
           { key: "subject", header: "Subject" },
           { key: "status", header: "Status" },
+          { key: "delete", header: "Delete", width: "7rem", grow: 0 },
         ],
         rows: [],
         loadRows: getBlogRows,
         updateStatus: updateBlogStatus,
+        deleteRow: deleteBlog,
+        deleteRowIdKey: "blogId",
         activeStatusValue: "active",
         inactiveStatusValue: "inactive",
         filterRows: filterBlogRows,
@@ -155,57 +158,59 @@ export const tabbedPages = {
           { key: "date", header: "Date" },
           { key: "description", header: "Modal Description", grow: 2 },
           { key: "status", header: "Status" },
+          { key: "delete", header: "Delete", width: "7rem", grow: 0 },
         ],
         rows: [],
         loadRows: getModalRows,
+        deleteRow: deleteModal,
+        deleteRowIdKey: "uuid",
+        hidePagination: true,
         emptyMessage: "No modals found.",
       },
       {
         id: "add-modal",
         label: "Add Modal",
+        submitForm: addModal,
+        refreshTabsOnSuccess: ["modal-list"],
+        redirectTabOnSuccess: "modal-list",
         formFields: [
           {
             type: "text",
-            name: "metaTitle",
-            label: "Meta Title",
-            placeholder: "Meta Title",
-            colClass: "col-md-4",
-          },
-          {
-            type: "text",
-            name: "metaKeywords",
-            label: "Meta Keywords",
-            placeholder: "Meta Keywords",
-            colClass: "col-md-4",
-          },
-          {
-            type: "text",
-            name: "metaDescription",
-            label: "Meta description",
-            placeholder: "Meta description",
-            colClass: "col-md-4",
-          },
-          {
-            type: "text",
-            name: "modalTitle",
+            name: "header",
             label: "Modal Title",
             placeholder: "Modal Title",
-            colClass: "col-md-12",
+            colClass: "col-md-8",
+            required: true,
+          },
+          {
+            type: "select",
+            name: "status",
+            label: "Status",
+            colClass: "col-md-4",
+            defaultValue: "1",
+            required: true,
+            options: [
+              { value: "1", label: "Live" },
+              { value: "0", label: "On Hold" },
+            ],
           },
           {
             type: "textarea",
-            name: "modalContent",
+            name: "description",
             label: "Modal Description",
             placeholder: "Modal Description",
             colClass: "col-md-12",
             height: 100,
+            required: true,
           },
           {
             type: "file",
-            name: "modalImage",
+            name: "image",
             label: "Modal Image",
             colClass: "col-md-4",
+            accept: "image/*",
             previewSrc: productPreviewImage,
+            required: true,
           },
           {
             type: "submit",
