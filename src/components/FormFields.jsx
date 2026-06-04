@@ -1,11 +1,38 @@
+import { useEffect, useMemo, useRef, useState } from "react";
+
 function handleFieldInput(field, event) {
   if (field.transform === "uppercaseAlphaNumeric") {
     event.target.value = event.target.value.replace(/[^a-zA-Z0-9]/g, "").toUpperCase();
   }
 }
 
-function renderField(field) {
-  if (field.type === "text" || field.type === "date") {
+function createInitialFieldValues(fields) {
+  return fields.reduce((values, field) => {
+    if (field.name) {
+      values[field.name] = field.defaultValue ?? "";
+    }
+
+    return values;
+  }, {});
+}
+
+function shouldRenderField(field, fieldValues) {
+  if (!field.showWhen) {
+    return true;
+  }
+
+  const currentValue = fieldValues[field.showWhen.field];
+  const expectedValue = field.showWhen.value;
+
+  if (Array.isArray(expectedValue)) {
+    return expectedValue.includes(currentValue);
+  }
+
+  return currentValue === expectedValue;
+}
+
+function renderField(field, setFieldValues) {
+  if (field.type === "text" || field.type === "date" || field.type === "number") {
     return (
       <div className={field.colClass} key={field.name}>
         <div className="form-floating mb-3">
@@ -22,8 +49,17 @@ function renderField(field) {
             title={field.title}
             maxLength={field.maxLength}
             inputMode={field.inputMode}
+            min={field.min}
+            max={field.max}
+            step={field.step}
             autoComplete={field.autoComplete}
-            onInput={(event) => handleFieldInput(field, event)}
+            onInput={(event) => {
+              handleFieldInput(field, event);
+              setFieldValues((currentValues) => ({
+                ...currentValues,
+                [field.name]: event.target.value,
+              }));
+            }}
             style={field.inputStyle}
           />
           <label htmlFor={field.name}>{field.label}</label>
@@ -44,6 +80,12 @@ function renderField(field) {
             aria-label={field.label}
             required={field.required ?? false}
             disabled={field.disabled ?? false}
+            onChange={(event) =>
+              setFieldValues((currentValues) => ({
+                ...currentValues,
+                [field.name]: event.target.value,
+              }))
+            }
           >
             {field.placeholderOption ? (
               <option value="">{field.placeholderOption}</option>
@@ -133,7 +175,38 @@ function renderField(field) {
 }
 
 function FormFields({ fields }) {
-  return <>{fields.map((field) => renderField(field))}</>;
+  const initialFieldValues = useMemo(() => createInitialFieldValues(fields), [fields]);
+  const [fieldValues, setFieldValues] = useState(initialFieldValues);
+  const anchorRef = useRef(null);
+
+  useEffect(() => {
+    const form = anchorRef.current?.closest("form");
+
+    if (!form) {
+      return undefined;
+    }
+
+    const handleReset = () => {
+      window.setTimeout(() => {
+        setFieldValues(createInitialFieldValues(fields));
+      }, 0);
+    };
+
+    form.addEventListener("reset", handleReset);
+
+    return () => {
+      form.removeEventListener("reset", handleReset);
+    };
+  }, [fields]);
+
+  return (
+    <>
+      <span ref={anchorRef} hidden />
+      {fields
+        .filter((field) => shouldRenderField(field, fieldValues))
+        .map((field) => renderField(field, setFieldValues))}
+    </>
+  );
 }
 
 export default FormFields;

@@ -6,17 +6,19 @@ const defaultCustomStyles = {
   table: {
     style: {
       minWidth: "100%",
+      width: "max-content",
     },
   },
   tableWrapper: {
     style: {
-      display: "block",
+      display: "table",
       width: "100%",
     },
   },
   responsiveWrapper: {
     style: {
       overflowX: "auto",
+      width: "100%",
     },
   },
   headRow: {
@@ -109,7 +111,7 @@ function renderCellContent(
   if (Array.isArray(value)) {
     return value.map((item, itemIndex) => (
       <p
-        className="mb-0"
+        className={buildClassName("mb-0", itemIndex > 0 && "mt-1")}
         key={`${column.key ?? column.id ?? column.header}-${row.id ?? rowIndex}-${itemIndex}`}
       >
         {item}

@@ -1,12 +1,11 @@
 import {
-  createIconLink,
-  createStatusSwitch,
   exportToolbarGroup,
   filterDropdown,
   orderStatusDropdown,
 } from "./shared";
 import { getCorporateGiftingRows } from "../services/corporateGifting";
 import { getCustomerInquiryRows } from "../services/customerInquiry";
+import { getOrderRows } from "../services/orders";
 
 export const simpleTablePages = {
   orders: {
@@ -15,47 +14,21 @@ export const simpleTablePages = {
     toolbarGroups: [exportToolbarGroup, orderStatusDropdown, filterDropdown],
     columns: [
       { key: "id", header: "#" },
-      { key: "customer", header: "Customer" },
-      { key: "contact", header: "Contact" },
-      { key: "city", header: "City" },
-      { key: "product", header: "Product" },
-      { key: "qty", header: "Qty" },
-      { key: "total", header: "Total" },
-      { key: "status", header: "Order Status" },
-      { key: "downloads", header: "Downloads" },
+      { key: "orderNumber", header: "Order ID", width: "8rem" },
+      { key: "customer", header: "Customer", minWidth: "8rem" },
+      { key: "contact", header: "Contact", width: "7.5rem" },
+      { key: "email", header: "Email", minWidth: "10rem" },
+      { key: "city", header: "City", width: "7.5rem" },
+      { key: "product", header: "Product", minWidth: "18rem", grow: 2 },
+      { key: "qty", header: "Qty", width: "4.5rem", center: true },
+      { key: "total", header: "Total", width: "6rem" },
+      { key: "paymentStatus", header: "Payment", width: "7rem" },
+      { key: "status", header: "Order Status", width: "9rem" },
+      { key: "downloads", header: "Downloads", width: "6.5rem", center: true },
     ],
-    rows: [
-      {
-        id: "1",
-        customer: "Vishvesh Vasu",
-        contact: "999 999 9999",
-        city: "Jamnagar",
-        product: "Dry Fruit Kachori (400gm)",
-        qty: "3",
-        total: "840/-",
-        status: createStatusSwitch("pending", [
-          { value: "pending", label: "Pending", badgeClass: "text-bg-warning" },
-          { value: "success", label: "Success", badgeClass: "text-bg-success" },
-          { value: "cancel", label: "Cancel", badgeClass: "text-bg-danger" },
-        ]),
-        downloads: createIconLink("bi bi-filetype-pdf"),
-      },
-      {
-        id: "2",
-        customer: "Vishvesh Vasu",
-        contact: "999 999 9999",
-        city: "Jamnagar",
-        product: "Chapti Kachori (500gm)",
-        qty: "1",
-        total: "260/-",
-        status: createStatusSwitch("success", [
-          { value: "pending", label: "Pending", badgeClass: "text-bg-warning" },
-          { value: "success", label: "Success", badgeClass: "text-bg-success" },
-          { value: "cancel", label: "Cancel", badgeClass: "text-bg-danger" },
-        ]),
-        downloads: createIconLink("bi bi-filetype-pdf"),
-      },
-    ],
+    rows: [],
+    loadRows: getOrderRows,
+    emptyMessage: "No orders found.",
   },
   corporateGifts: {
     title: "Corporate Gifting Inquiries",

@@ -5,8 +5,7 @@ import {
 } from "./shared";
 import { addBlog, deleteBlog, getBlogRows, updateBlogStatus } from "../services/blogs";
 import { addModal, deleteModal, getModalRows } from "../services/modals";
-import { addOffer, getOfferRows } from "../services/offers";
-import { getProductOptions } from "../services/products";
+import { addOffer, getOfferRows, updateOfferStatus } from "../services/offers";
 
 const blogStatusDropdown = {
   id: "blogStatus",
@@ -232,13 +231,18 @@ export const tabbedPages = {
         label: "Offer List",
         columns: [
           { key: "id", header: "#" },
-          { key: "productName", header: "Product Name" },
+          { key: "couponCode", header: "Coupen Code" },
           { key: "dateRange", header: "Date (from - to)" },
+          { key: "cartValue", header: "Cart Value" },
           { key: "offer", header: "Offer" },
           { key: "status", header: "Status" },
         ],
         rows: [],
         loadRows: getOfferRows,
+        updateStatus: updateOfferStatus,
+        statusRowIdKey: "offerId",
+        activeStatusValue: "active",
+        inactiveStatusValue: "hold",
         emptyMessage: "No offers found.",
       },
       {
@@ -249,31 +253,11 @@ export const tabbedPages = {
         redirectTabOnSuccess: "offer-list",
         formFields: [
           {
-            type: "select",
-            name: "product_id",
-            label: "Product Name",
-            placeholderOption: "Product Name",
-            colClass: "col-md-4",
-            loadingPlaceholderOption: "Loading products...",
-            disableWhenEmptyOptions: true,
-            options: [],
-            loadOptions: getProductOptions,
-            required: true,
-          },
-          {
-            type: "text",
-            name: "offer_percentage",
-            label: "eg; 5%",
-            placeholder: "Offer",
-            colClass: "col-md-2",
-            required: true,
-          },
-          {
             type: "text",
             name: "coupon_code",
             label: "Coupen Code",
             placeholder: "Coupen Code",
-            colClass: "col-md-2",
+            colClass: "col-md-3",
             transform: "uppercaseAlphaNumeric",
             pattern: "[A-Z0-9]+",
             title: "Use uppercase letters A-Z and numbers 0-9 only.",
@@ -288,7 +272,7 @@ export const tabbedPages = {
             name: "startdate",
             label: "Offer Starts From",
             placeholder: "Offer",
-            colClass: "col-md-2",
+            colClass: "col-md-3",
             required: true,
           },
           {
@@ -296,8 +280,55 @@ export const tabbedPages = {
             name: "enddate",
             label: "Offer End to",
             placeholder: "Offer",
-            colClass: "col-md-2",
+            colClass: "col-md-3",
             required: true,
+          },
+          {
+            type: "number",
+            name: "cart_value",
+            label: "Cart Value",
+            placeholder: "Cart Value",
+            colClass: "col-md-3",
+            min: "0",
+            step: "1",
+            inputMode: "numeric",
+            required: true,
+          },
+          {
+            type: "select",
+            name: "offer_type",
+            label: "Offer Type",
+            colClass: "col-md-3",
+            defaultValue: "percentage",
+            required: true,
+            options: [
+              { value: "percentage", label: "Percentage Wise" },
+              { value: "flat", label: "Amount Wise" },
+            ],
+          },
+          {
+            type: "number",
+            name: "offer_percentage",
+            label: "Offer Percentage",
+            placeholder: "Offer Percentage",
+            colClass: "col-md-3",
+            min: "0",
+            step: "1",
+            inputMode: "numeric",
+            required: true,
+            showWhen: { field: "offer_type", value: "percentage" },
+          },
+          {
+            type: "number",
+            name: "offer_amount",
+            label: "Offer Amount",
+            placeholder: "Offer Amount",
+            colClass: "col-md-3",
+            min: "0",
+            step: "1",
+            inputMode: "numeric",
+            required: true,
+            showWhen: { field: "offer_type", value: "flat" },
           },
           {
             type: "submit",

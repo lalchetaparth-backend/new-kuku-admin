@@ -88,13 +88,13 @@ function setStatusSwitchDisabled(rows, disabled) {
   });
 }
 
-function updateStatusRow(rows, targetBlogId, nextStatus) {
+function updateStatusRow(rows, targetRowId, rowIdKey, nextStatus) {
   return rows.map((row) => {
     if (row.status?.type !== "statusSwitch") {
       return row;
     }
 
-    const isTargetRow = row.blogId === targetBlogId;
+    const isTargetRow = row[rowIdKey] === targetRowId;
 
     return {
       ...row,
@@ -354,7 +354,10 @@ function TabbedResourcePage({ pageKey }) {
   };
 
   const handleStatusChange = async (tab, row, checked) => {
-    if (!tab.updateStatus || row.blogId === undefined || row.blogId === null) {
+    const rowIdKey = tab.statusRowIdKey ?? "blogId";
+    const rowId = row[rowIdKey];
+
+    if (!tab.updateStatus || rowId === undefined || rowId === null) {
       return;
     }
 
@@ -374,13 +377,18 @@ function TabbedResourcePage({ pageKey }) {
     }));
 
     try {
-      const response = await tab.updateStatus(row.blogId, nextStatus);
+      const response = await tab.updateStatus(rowId, nextStatus);
 
       setTabState((currentState) => ({
         ...currentState,
         [tab.id]: {
           ...(currentState[tab.id] ?? {}),
-          rows: updateStatusRow(currentState[tab.id]?.rows ?? [], row.blogId, nextStatus),
+          rows: updateStatusRow(
+            currentState[tab.id]?.rows ?? [],
+            rowId,
+            rowIdKey,
+            nextStatus,
+          ),
           isUpdatingStatus: false,
           statusMessage:
             (typeof response === "object" && response !== null && response.msg) ||

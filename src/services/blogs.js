@@ -3,9 +3,10 @@ import { apiRequest } from "../lib/api";
 
 const EMPTY_VALUE = "-";
 const ON_HOLD_LABEL = "On Hold";
+const LIVE_LABEL = "Live";
 
 const blogStatusOptions = [
-  { value: "active", label: "Active", badgeClass: "text-bg-success" },
+  { value: "active", label: LIVE_LABEL, badgeClass: "text-bg-success" },
   { value: "inactive", label: ON_HOLD_LABEL, badgeClass: "status-badge-inactive" },
 ];
 
@@ -70,7 +71,9 @@ function normalizeStatusMessage(response) {
   ) {
     return {
       ...response,
-      msg: response.msg.replace(/Inactive/g, ON_HOLD_LABEL),
+      msg: response.msg
+        .replace(/\bInactive\b/g, ON_HOLD_LABEL)
+        .replace(/\bActive\b/g, LIVE_LABEL),
     };
   }
 

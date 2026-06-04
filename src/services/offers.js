@@ -3,8 +3,8 @@ import { apiRequest } from "../lib/api";
 
 const EMPTY_VALUE = "-";
 const offerStatusOptions = [
-  { value: "active", label: "Active", badgeClass: "text-bg-success" },
-  { value: "hold", label: "On Hold", badgeClass: "text-bg-warning" },
+  { value: "active", label: "Live", badgeClass: "text-bg-success" },
+  { value: "hold", label: "On Hold", badgeClass: "status-badge-inactive" },
 ];
 
 function formatValue(value) {
@@ -69,6 +69,39 @@ function formatOfferPercentage(value) {
   return `${numericValue}%`;
 }
 
+function formatOfferAmount(value) {
+  if (value === null || value === undefined || value === "") {
+    return EMPTY_VALUE;
+  }
+
+  const normalizedValue = String(value).trim();
+  const numericValue = Number(normalizedValue);
+
+  if (Number.isNaN(numericValue)) {
+    return formatValue(value);
+  }
+
+  return new Intl.NumberFormat("en-IN", {
+    maximumFractionDigits: 2,
+  }).format(numericValue);
+}
+
+function formatOfferValue(offer) {
+  const normalizedOfferType = String(offer.offer_type ?? "")
+    .trim()
+    .toLowerCase();
+
+  if (
+    normalizedOfferType === "flat" ||
+    normalizedOfferType === "amount_wise" ||
+    offer.offer_amount
+  ) {
+    return formatOfferAmount(offer.offer_amount);
+  }
+
+  return formatOfferPercentage(offer.offer_percentage);
+}
+
 function normalizeOfferStatus(value) {
   if (typeof value === "boolean") {
     return value ? "active" : "hold";
@@ -95,11 +128,17 @@ function mapOfferToRow(offer, index) {
   return {
     id: index + 1,
     productName: formatValue(offer.product_name),
+    cartValue: formatOfferAmount(offer.cart_value),
     dateRange: formatDateRange(offer.startdate, offer.enddate),
-    offer: formatOfferPercentage(offer.offer_percentage),
+    offer: formatOfferValue(offer),
     status: createStatusSwitch(
       normalizeOfferStatus(offer.is_active),
       offerStatusOptions,
+      {
+        activeValue: "active",
+        interactive: true,
+        showCurrentOnly: true,
+      },
     ),
     offerId: offer.id,
     productId: offer.product_id,
@@ -123,6 +162,21 @@ function normalizeCouponCode(value) {
     .toUpperCase();
 }
 
+function formatRequiredNumber(formData, fieldName, label) {
+  const value = formatRequiredValue(formData, fieldName, label);
+  const numericValue = Number(value);
+
+  if (!Number.isFinite(numericValue) || numericValue < 0) {
+    throw new Error(`${label} must be a valid number.`);
+  }
+
+  return value;
+}
+
+function normalizeSubmitStatus(status) {
+  return normalizeOfferStatus(status) === "active" ? "1" : "0";
+}
+
 export async function getOfferRows() {
   const response = await apiRequest("/product/get-offers");
   const offers = Array.isArray(response?.data) ? response.data : [];
@@ -133,19 +187,16 @@ export async function getOfferRows() {
 export async function addOffer(formData) {
   const payload = new FormData();
   const couponCode = normalizeCouponCode(formData.get("coupon_code"));
+  const offerType = formatRequiredValue(formData, "offer_type", "Offer Type");
 
   if (!couponCode) {
     throw new Error("Coupen Code is required.");
   }
 
-  payload.set(
-    "product_id",
-    formatRequiredValue(formData, "product_id", "Product Name"),
-  );
-  payload.set(
-    "offer_percentage",
-    formatRequiredValue(formData, "offer_percentage", "Offer Percentage"),
-  );
+  if (offerType !== "percentage" && offerType !== "flat") {
+    throw new Error("Select a valid offer type.");
+  }
+
   payload.set("coupon_code", couponCode);
   payload.set(
     "startdate",
@@ -155,9 +206,43 @@ export async function addOffer(formData) {
     "enddate",
     formatRequiredValue(formData, "enddate", "Offer End to"),
   );
+  payload.set("cart_value", formatRequiredNumber(formData, "cart_value", "Cart Value"));
+  payload.set("offer_type", offerType);
   payload.set("is_active", "1");
 
+  if (offerType === "percentage") {
+    payload.set(
+      "offer_percentage",
+      formatRequiredNumber(formData, "offer_percentage", "Offer Percentage"),
+    );
+  }
+
+  if (offerType === "flat") {
+    payload.set(
+      "offer_amount",
+      formatRequiredNumber(formData, "offer_amount", "Offer Amount"),
+    );
+  }
+
   return apiRequest("/product/add-offer", {
+    method: "POST",
+    body: payload,
+  });
+}
+
+export async function updateOfferStatus(offerId, status) {
+  const normalizedOfferId = String(offerId ?? "").trim();
+
+  if (!normalizedOfferId) {
+    throw new Error("Offer id is missing.");
+  }
+
+  const payload = new FormData();
+
+  payload.set("offer_id", normalizedOfferId);
+  payload.set("is_active", normalizeSubmitStatus(status));
+
+  return apiRequest("/product/update-offer-status", {
     method: "POST",
     body: payload,
   });

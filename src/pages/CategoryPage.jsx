@@ -40,6 +40,17 @@ function filterCategories(categories, filters) {
   );
 }
 
+function getCategoryStatusMessage(response, fallbackMessage) {
+  const message =
+    typeof response === "object" && response !== null
+      ? response.msg || response.message || fallbackMessage
+      : fallbackMessage;
+
+  return String(message)
+    .replace(/\bActive\b/g, "Live")
+    .replace(/\bInactive\b/g, "On Hold");
+}
+
 const categoryTableStyles = {
   table: {
     style: {
@@ -136,7 +147,7 @@ function CategoryPage() {
   const handleStatusChange = async (row, checked) => {
     if (!row.category_id) return;
 
-    const nextStatus = checked ? "Active" : "Inactive";
+    const nextStatus = checked ? "live" : "inactive";
 
     setIsUpdatingStatus(true);
     setStatusToastMessage("");
@@ -154,8 +165,7 @@ function CategoryPage() {
       );
 
       setStatusToastMessage(
-        (typeof response === "object" && response !== null && response.msg) ||
-        "Status updated successfully."
+        getCategoryStatusMessage(response, "Status updated successfully.")
       );
     } catch (err) {
       setStatusErrorMessage(
@@ -210,7 +220,7 @@ function CategoryPage() {
       setIsSubmitting(true);
       const formData = new FormData();
       formData.append("category_name", categoryName);
-      formData.append("category_status", "Active");
+      formData.append("category_status", "live");
       if (categoryImage) {
         formData.append("category_image", categoryImage);
       }
@@ -334,8 +344,8 @@ function CategoryPage() {
             <StatusSwitch
               current={normalizeCategoryStatus(row.category_status)}
               options={[
-                { value: "active", label: "Active", badgeClass: "text-bg-success" },
-                { value: "inactive", label: "Inactive", badgeClass: "text-bg-warning" },
+                { value: "active", label: "Live", badgeClass: "text-bg-success" },
+                { value: "inactive", label: "On Hold", badgeClass: "text-bg-warning" },
               ]}
               activeValue="active"
               showCurrentOnly={true}

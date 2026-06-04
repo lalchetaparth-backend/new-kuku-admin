@@ -1,8 +1,8 @@
 import { activeHoldDropdown, createStatusSwitch, exportToolbarGroup } from "./shared";
 
 const categoryStatusOptions = [
-  { value: "active", label: "Active", badgeClass: "text-bg-success" },
-  { value: "hold", label: "Hold", badgeClass: "text-bg-warning" },
+  { value: "active", label: "Live", badgeClass: "text-bg-success" },
+  { value: "inactive", label: "On Hold", badgeClass: "text-bg-warning" },
 ];
 
 export const categoryPageData = {

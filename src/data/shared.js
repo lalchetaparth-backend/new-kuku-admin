@@ -103,8 +103,8 @@ export const activeHoldDropdown = {
   defaultValue: "all",
   items: [
     { label: "All Status", value: "all" },
-    { label: "Active", value: "active" },
-    { label: "Inactive", value: "inactive" },
+    { label: "Live", value: "active" },
+    { label: "On Hold", value: "inactive" },
   ],
 };
 
