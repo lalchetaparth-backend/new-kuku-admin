@@ -1,4 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
+import { CKEditor } from "@ckeditor/ckeditor5-react";
 
 function handleFieldInput(field, event) {
   if (field.transform === "uppercaseAlphaNumeric") {
@@ -31,7 +33,7 @@ function shouldRenderField(field, fieldValues) {
   return currentValue === expectedValue;
 }
 
-function renderField(field, setFieldValues) {
+function renderField(field, setFieldValues, fieldValues, resetKey) {
   if (field.type === "text" || field.type === "date" || field.type === "number") {
     return (
       <div className={field.colClass} key={field.name}>
@@ -122,7 +124,62 @@ function renderField(field, setFieldValues) {
     );
   }
 
+  if (field.type === "richtext") {
+    const fieldValue = fieldValues[field.name] ?? "";
+
+    return (
+      <div className={field.colClass} key={field.name}>
+        <div className="mb-3">
+          <label htmlFor={field.name} className="form-label">
+            {field.label}
+          </label>
+          <input
+            type="hidden"
+            id={field.name}
+            name={field.name}
+            value={fieldValue}
+            required={field.required ?? false}
+            readOnly
+          />
+          <div className="bg-white">
+            <CKEditor
+              key={`${field.name}-${resetKey}`}
+              editor={ClassicEditor}
+              data={fieldValue}
+              disabled={field.disabled ?? false}
+              config={{
+                toolbar: [
+                  "heading",
+                  "|",
+                  "bold",
+                  "italic",
+                  "link",
+                  "bulletedList",
+                  "numberedList",
+                  "|",
+                  "undo",
+                  "redo",
+                ],
+                ...field.editorConfig,
+              }}
+              onChange={(_event, editor) => {
+                const nextValue = editor.getData();
+
+                setFieldValues((currentValues) => ({
+                  ...currentValues,
+                  [field.name]: nextValue,
+                }));
+              }}
+            />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (field.type === "file") {
+    const maxFiles = Number(field.maxFiles);
+
     return (
       <div className={field.colClass} key={field.name}>
         <div>
@@ -138,6 +195,20 @@ function renderField(field, setFieldValues) {
             multiple={field.multiple ?? false}
             required={field.required ?? false}
             disabled={field.disabled ?? false}
+            onChange={(event) => {
+              if (!Number.isFinite(maxFiles) || maxFiles <= 0) {
+                return;
+              }
+
+              if (event.target.files.length > maxFiles) {
+                event.target.value = "";
+                event.target.setCustomValidity(`Select maximum ${maxFiles} files.`);
+                event.target.reportValidity();
+                return;
+              }
+
+              event.target.setCustomValidity("");
+            }}
           />
         </div>
         {field.previewSrc ? (
@@ -177,6 +248,7 @@ function renderField(field, setFieldValues) {
 function FormFields({ fields }) {
   const initialFieldValues = useMemo(() => createInitialFieldValues(fields), [fields]);
   const [fieldValues, setFieldValues] = useState(initialFieldValues);
+  const [resetKey, setResetKey] = useState(0);
   const anchorRef = useRef(null);
 
   useEffect(() => {
@@ -189,6 +261,7 @@ function FormFields({ fields }) {
     const handleReset = () => {
       window.setTimeout(() => {
         setFieldValues(createInitialFieldValues(fields));
+        setResetKey((currentResetKey) => currentResetKey + 1);
       }, 0);
     };
 
@@ -204,7 +277,7 @@ function FormFields({ fields }) {
       <span ref={anchorRef} hidden />
       {fields
         .filter((field) => shouldRenderField(field, fieldValues))
-        .map((field) => renderField(field, setFieldValues))}
+        .map((field) => renderField(field, setFieldValues, fieldValues, resetKey))}
     </>
   );
 }

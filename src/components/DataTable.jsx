@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import ReactDataTable from "react-data-table-component";
 import StatusSwitch from "./StatusSwitch";
 
@@ -106,7 +106,7 @@ function mergeObjects(baseValue, overrideValue) {
 
 function renderCellContent(
   value,
-  { row, rowIndex, column, onAction, onStatusChange },
+  { row, rowIndex, column, onAction, onStatusChange, onDeleteClick },
 ) {
   if (Array.isArray(value)) {
     return value.map((item, itemIndex) => (
@@ -153,7 +153,7 @@ function renderCellContent(
       <button
         type="button"
         className="delete-link"
-        onClick={() => onAction?.(value.action, row)}
+        onClick={() => onDeleteClick?.(row, value.action)}
       >
         <i className="bi bi-trash" />
         <span>{value.label ?? "Delete"}</span>
@@ -166,7 +166,14 @@ function renderCellContent(
       <button
         type="button"
         className={value.buttonClass}
-        onClick={() => onAction?.(value.action, row)}
+        onClick={() => {
+          if (value.action === "delete") {
+            onDeleteClick?.(row, value.action);
+            return;
+          }
+
+          onAction?.(value.action, row);
+        }}
       >
         <i className={value.iconClass} />
       </button>
@@ -209,6 +216,23 @@ function DataTable({
   customStyles,
   ...tableProps
 }) {
+  const [deleteConfirm, setDeleteConfirm] = useState(null);
+
+  const handleDeleteClick = (row, action = "delete") => {
+    setDeleteConfirm({ row, action });
+  };
+
+  const confirmDelete = () => {
+    if (!deleteConfirm) {
+      return;
+    }
+
+    onAction?.(deleteConfirm.action, deleteConfirm.row);
+    setDeleteConfirm(null);
+  };
+
+  const cancelDelete = () => setDeleteConfirm(null);
+
   const resolvedColumns = useMemo(
     () =>
       columns.map((column, index) => ({
@@ -246,6 +270,7 @@ function DataTable({
             column,
             onAction,
             onStatusChange,
+            onDeleteClick: handleDeleteClick,
           }),
       })),
     [columns, onAction, onStatusChange],
@@ -269,6 +294,29 @@ function DataTable({
         customStyles={resolvedCustomStyles}
         {...tableProps}
       />
+
+      {deleteConfirm ? (
+        <div className="app-confirm-backdrop" onClick={cancelDelete}>
+          <div
+            className="app-confirm-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Delete confirmation"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <h5 className="app-confirm-title">Delete item?</h5>
+            <p className="app-confirm-text">Are you sure you want to delete this item?</p>
+            <div className="app-confirm-actions">
+              <button type="button" className="btn btn-outline-secondary btn-sm" onClick={cancelDelete}>
+                No
+              </button>
+              <button type="button" className="btn btn-danger btn-sm" onClick={confirmDelete}>
+                Yes
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

@@ -44,11 +44,13 @@ export const exportToolbarGroup = {
   items: [
     {
       label: "Export PDF",
+      action: "exportPdf",
       iconClass: "bi bi-filetype-pdf me-1",
       buttonClass: "btn btn-sm btn-outline-secondary",
     },
     {
       label: "Export CSV",
+      action: "exportCsv",
       iconClass: "bi bi-file-spreadsheet me-1",
       buttonClass: "btn btn-sm btn-outline-secondary",
     },

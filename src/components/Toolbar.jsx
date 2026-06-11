@@ -8,7 +8,9 @@ function Toolbar({ groups, state = {}, onAction }) {
               type="button"
               className={item.buttonClass}
               key={item.label}
-              onClick={(event) => event.preventDefault()}
+              onClick={() =>
+                onAction?.(group.id, item.action ?? item.label, item)
+              }
             >
               {item.iconClass ? <i className={item.iconClass} /> : null}
               {item.iconClass ? " " : null}

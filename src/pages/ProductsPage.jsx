@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import DataTable from "../components/DataTable";
+import DetailModal from "../components/DetailModal";
 import FormFields from "../components/FormFields";
 import PageHeader from "../components/PageHeader";
 import Pagination from "../components/Pagination";
@@ -12,6 +13,7 @@ import {
   getProductCategoryOptions,
   updateProductStatus,
 } from "../services/products";
+import { downloadProductCatalogCsv } from "../utils/catalogExport";
 
 function createInitialToolbarState(toolbarGroups = []) {
   return toolbarGroups.reduce((state, group) => {
@@ -109,6 +111,54 @@ function VariantRow({ variant, index, isLastVariant, onAddVariant }) {
   );
 }
 
+function createImagePreview(file, index) {
+  return {
+    id: `${file.name}-${file.lastModified}-${file.size}-${index}`,
+    src: URL.createObjectURL(file),
+    alt: file.name,
+  };
+}
+
+function revokeImagePreviews(previews) {
+  previews.forEach((preview) => {
+    URL.revokeObjectURL(preview.src);
+  });
+}
+
+function formatDetailValue(value) {
+  if (value === null || value === undefined || String(value).trim() === "") {
+    return "--";
+  }
+
+  return String(value);
+}
+
+function buildProductVariantDetail(row) {
+  const variants = Array.isArray(row.variants) ? row.variants : [];
+  const sections =
+    variants.length > 0
+      ? variants.map((variant, index) => [
+          ["Variant", `Variant ${index + 1}`],
+          ["Product ID", formatDetailValue(variant.product_id)],
+          ["Unique ID", formatDetailValue(variant.unique_id)],
+          ["Weight", formatDetailValue(variant.weight)],
+          ["Price", formatDetailValue(variant.product_price)],
+          ["MRP", formatDetailValue(variant.product_sell_price)],
+          ["Item Weight", formatDetailValue(variant.item_weight)],
+          ["Item Length", formatDetailValue(variant.item_length)],
+          ["Item Width", formatDetailValue(variant.item_width)],
+          ["Item Height", formatDetailValue(variant.item_height)],
+          ["Stock in Pkts", formatDetailValue(variant.stock_in_pkts)],
+          ["SKU", formatDetailValue(variant.sku)],
+        ])
+      : [[["Variants", "No variants found."]]];
+
+  return {
+    title: `${formatDetailValue(row.productName)} - Product Variants`,
+    sections,
+  };
+}
+
 function setProductStatusDisabled(rows, disabled) {
   return rows.map((row) => ({
     ...row,
@@ -154,6 +204,11 @@ function ProductsPage() {
   const [categoryOptions, setCategoryOptions] = useState([]);
   const [isLoadingCategories, setIsLoadingCategories] = useState(true);
   const [categoryErrorMessage, setCategoryErrorMessage] = useState("");
+  const [selectedProductDetail, setSelectedProductDetail] = useState(null);
+  const [photoPreviews, setPhotoPreviews] = useState({
+    main: [],
+    others: [],
+  });
   const [toolbarState, setToolbarState] = useState(() =>
     createInitialToolbarState(productsPageData.toolbarGroups),
   );
@@ -234,6 +289,14 @@ function ProductsPage() {
     };
   }, []);
 
+  useEffect(
+    () => () => {
+      revokeImagePreviews(photoPreviews.main);
+      revokeImagePreviews(photoPreviews.others);
+    },
+    [photoPreviews],
+  );
+
   useEffect(() => {
     if (!statusToastMessage) {
       return undefined;
@@ -293,6 +356,20 @@ function ProductsPage() {
     ]);
   };
 
+  const handleProductPhotoChange = (previewKey, files) => {
+    const selectedFiles = Array.from(files ?? []);
+    const nextPreviews = selectedFiles.map(createImagePreview);
+
+    setPhotoPreviews((currentPreviews) => {
+      revokeImagePreviews(currentPreviews[previewKey]);
+
+      return {
+        ...currentPreviews,
+        [previewKey]: nextPreviews,
+      };
+    });
+  };
+
   const handleStatusChange = async (row, checked) => {
     if (row.productId === undefined || row.productId === null) {
       return;
@@ -326,6 +403,11 @@ function ProductsPage() {
   };
 
   const handleAction = async (action, row) => {
+    if (action === "productVariants") {
+      setSelectedProductDetail(buildProductVariantDetail(row));
+      return;
+    }
+
     if (action !== "delete") {
       return;
     }
@@ -371,6 +453,15 @@ function ProductsPage() {
 
       form.reset();
       setVariants(createInitialVariants());
+      setPhotoPreviews((currentPreviews) => {
+        revokeImagePreviews(currentPreviews.main);
+        revokeImagePreviews(currentPreviews.others);
+
+        return {
+          main: [],
+          others: [],
+        };
+      });
       setStatusToastMessage(
         (typeof response === "object" && response !== null && response.msg) ||
           "Product added successfully.",
@@ -401,6 +492,25 @@ function ProductsPage() {
   });
 
   const handleToolbarAction = (groupId, value) => {
+    if (value === "exportCsv") {
+      const visibleRows = filterProductRows(rows, toolbarState);
+
+      if (visibleRows.length === 0) {
+        setStatusErrorMessage("No products available to export.");
+        return;
+      }
+
+      downloadProductCatalogCsv(visibleRows);
+      setStatusToastMessage("Product catalog CSV downloaded.");
+      setStatusErrorMessage("");
+      return;
+    }
+
+    if (value === "exportPdf") {
+      setStatusErrorMessage("PDF export is not available for products yet.");
+      return;
+    }
+
     if (!groupId) {
       return;
     }
@@ -515,13 +625,19 @@ function ProductsPage() {
                       type="file"
                       accept="image/*"
                       required
+                      onChange={(event) =>
+                        handleProductPhotoChange("main", event.target.files)
+                      }
                     />
                   </div>
-                  <img
-                    src={productsPageData.mainPhoto.previewSrc}
-                    className="admin-pro-img"
-                    alt={productsPageData.mainPhoto.label}
-                  />
+                  {photoPreviews.main.map((preview) => (
+                    <img
+                      key={preview.id}
+                      src={preview.src}
+                      className="admin-pro-img"
+                      alt={preview.alt}
+                    />
+                  ))}
                 </div>
 
                 <div className="col-md-9">
@@ -535,15 +651,25 @@ function ProductsPage() {
                       name="other_images"
                       type="file"
                       multiple
+                      accept="image/*"
+                      onChange={(event) =>
+                        handleProductPhotoChange("others", event.target.files)
+                      }
                     />
                   </div>
-                  <div className="row">
-                    {productsPageData.otherPhotos.previewImages.map((imageSrc, index) => (
-                      <div className="col-md-2 col-4" key={`${imageSrc}-${index}`}>
-                        <img src={imageSrc} className="admin-pro-img" alt="Product preview" />
-                      </div>
-                    ))}
-                  </div>
+                  {photoPreviews.others.length > 0 ? (
+                    <div className="row">
+                      {photoPreviews.others.map((preview) => (
+                        <div className="col-md-2 col-4" key={preview.id}>
+                          <img
+                            src={preview.src}
+                            className="admin-pro-img"
+                            alt={preview.alt}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  ) : null}
                 </div>
 
                 <div className="col-md-12 mt-4">
@@ -574,6 +700,10 @@ function ProductsPage() {
             </form>
           );
         }}
+      />
+      <DetailModal
+        detail={selectedProductDetail}
+        onClose={() => setSelectedProductDetail(null)}
       />
     </>
   );

@@ -196,3 +196,16 @@ export async function updateBlogAdStatus(blogAdId, status) {
     body: payload,
   });
 }
+
+export async function deleteBlogAd(blogAdId) {
+  const normalizedBlogAdId = String(blogAdId ?? "").trim();
+
+  if (!normalizedBlogAdId) {
+    throw new Error("Blog advertisement id is missing.");
+  }
+
+  return apiRequest("/admin/deleteBlogAd", {
+    method: "DELETE",
+    body: JSON.stringify({ blog_ad_id: Number(normalizedBlogAdId) }),
+  });
+}

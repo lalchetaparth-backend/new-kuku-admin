@@ -3,7 +3,12 @@ import PageHeader from "../components/PageHeader";
 import Pagination from "../components/Pagination";
 import StatusSwitch from "../components/StatusSwitch";
 import useDocumentTitle from "../hooks/useDocumentTitle";
-import { addBlogAd, getBlogAds, updateBlogAdStatus } from "../services/blogAds";
+import {
+  addBlogAd,
+  deleteBlogAd,
+  getBlogAds,
+  updateBlogAdStatus,
+} from "../services/blogAds";
 import { getProductCategoryOptions } from "../services/products";
 
 const statusToolbar = {
@@ -95,6 +100,8 @@ function BlogsOfferPage() {
   const [formErrorMessage, setFormErrorMessage] = useState("");
   const [statusErrorMessage, setStatusErrorMessage] = useState("");
   const [statusToastMessage, setStatusToastMessage] = useState("");
+  const [deleteConfirmRow, setDeleteConfirmRow] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [toolbarState, setToolbarState] = useState(() =>
     createInitialToolbarState(toolbarGroups),
   );
@@ -259,6 +266,30 @@ function BlogsOfferPage() {
       await loadRows(categoryOptions);
     } finally {
       setIsUpdatingStatus(false);
+    }
+  };
+
+  const handleDelete = async (row) => {
+    if (!row.blogAdId) {
+      setStatusErrorMessage("Unable to delete advertisement. Missing blog advertisement id.");
+      return;
+    }
+
+    setIsDeleting(true);
+    setStatusErrorMessage("");
+
+    try {
+      const response = await deleteBlogAd(row.blogAdId);
+
+      setStatusToastMessage(getMessage(response, "Advertisement deleted successfully."));
+      setDeleteConfirmRow(null);
+      await loadRows(categoryOptions);
+    } catch (error) {
+      setStatusErrorMessage(
+        error instanceof Error ? error.message : "Unable to delete advertisement.",
+      );
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -429,7 +460,12 @@ function BlogsOfferPage() {
                     />
                   </td>
                   <td>
-                    <button type="button" className="delete-link">
+                    <button
+                      type="button"
+                      className="delete-link"
+                      disabled={isDeleting}
+                      onClick={() => setDeleteConfirmRow(row)}
+                    >
                       <i className="bi bi-trash" />
                       <span>Delete</span>
                     </button>
@@ -442,6 +478,37 @@ function BlogsOfferPage() {
       </div>
 
       {visibleRows.length > 0 ? <Pagination /> : null}
+
+      {deleteConfirmRow ? (
+        <div className="app-confirm-backdrop" onClick={() => setDeleteConfirmRow(null)}>
+          <div
+            className="app-confirm-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Delete confirmation"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <h5 className="app-confirm-title">Delete advertisement?</h5>
+            <p className="app-confirm-text">Are you sure you want to delete this advertisement?</p>
+            <div className="app-confirm-actions">
+              <button
+                type="button"
+                className="btn btn-outline-secondary btn-sm"
+                onClick={() => setDeleteConfirmRow(null)}
+              >
+                No
+              </button>
+              <button
+                type="button"
+                className="btn btn-danger btn-sm"
+                onClick={() => handleDelete(deleteConfirmRow)}
+              >
+                Yes
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </>
   );
 }

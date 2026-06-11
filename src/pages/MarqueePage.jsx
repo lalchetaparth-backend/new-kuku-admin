@@ -39,6 +39,7 @@ function MarqueePage() {
   const [formErrorMessage, setFormErrorMessage] = useState("");
   const [actionErrorMessage, setActionErrorMessage] = useState("");
   const [statusToastMessage, setStatusToastMessage] = useState("");
+  const [deleteConfirmRow, setDeleteConfirmRow] = useState(null);
 
   const loadRows = async () => {
     setIsLoading(true);
@@ -140,6 +141,7 @@ function MarqueePage() {
       return;
     }
 
+    setDeleteConfirmRow(null);
     setIsDeleting(true);
     setActionErrorMessage("");
 
@@ -260,7 +262,7 @@ function MarqueePage() {
                     type="button"
                     className="delete-link"
                     disabled={isDeleting}
-                    onClick={() => handleDelete(row)}
+                    onClick={() => setDeleteConfirmRow(row)}
                   >
                     <i className="bi bi-trash" />
                     <span>Delete</span>
@@ -273,6 +275,37 @@ function MarqueePage() {
       </div>
 
       {rows.length > 0 ? <Pagination /> : null}
+
+      {deleteConfirmRow ? (
+        <div className="app-confirm-backdrop" onClick={() => setDeleteConfirmRow(null)}>
+          <div
+            className="app-confirm-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Delete confirmation"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <h5 className="app-confirm-title">Delete marquee?</h5>
+            <p className="app-confirm-text">Are you sure you want to delete this marquee?</p>
+            <div className="app-confirm-actions">
+              <button
+                type="button"
+                className="btn btn-outline-secondary btn-sm"
+                onClick={() => setDeleteConfirmRow(null)}
+              >
+                No
+              </button>
+              <button
+                type="button"
+                className="btn btn-danger btn-sm"
+                onClick={() => handleDelete(deleteConfirmRow)}
+              >
+                Yes
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </>
   );
 }

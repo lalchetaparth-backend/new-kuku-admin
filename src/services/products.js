@@ -1,4 +1,8 @@
-import { createDeleteLink, createStatusSwitch } from "../data/shared";
+import {
+  createActionButton,
+  createDeleteLink,
+  createStatusSwitch,
+} from "../data/shared";
 import { apiRequest } from "../lib/api";
 
 const EMPTY_VALUE = "-";
@@ -79,6 +83,7 @@ function normalizeSubmitStatus(status) {
 
 function buildVariantData(formData) {
   const variantsByIndex = new Map();
+  const sku = String(formData.get("sku") ?? "").trim();
 
   for (const [key, rawValue] of formData.entries()) {
     const matchedField = key.match(
@@ -100,6 +105,9 @@ function buildVariantData(formData) {
 
   return Array.from(variantsByIndex.entries())
     .sort(([leftIndex], [rightIndex]) => leftIndex - rightIndex)
+    .filter(([, variant]) =>
+      Object.values(variant).some((value) => String(value).trim() !== ""),
+    )
     .map(([, variant]) => ({
       weight: variant.weight ?? "",
       product_price: variant.price ?? "",
@@ -108,10 +116,18 @@ function buildVariantData(formData) {
       item_length: variant.itemLength ?? "",
       item_width: variant.itemWidth ?? "",
       item_height: variant.itemHeight ?? "",
-    }))
-    .filter((variant) =>
-      Object.values(variant).some((value) => String(value).trim() !== ""),
-    );
+      sku,
+    }));
+}
+
+function getFiles(formData, fieldName) {
+  return formData
+    .getAll(fieldName)
+    .filter((file) => file instanceof File && file.size > 0);
+}
+
+function setTextField(payload, formData, payloadFieldName, formFieldName = payloadFieldName) {
+  payload.set(payloadFieldName, String(formData.get(formFieldName) ?? "").trim());
 }
 
 function isActiveCategory(category) {
@@ -216,8 +232,14 @@ function mapProductToRow(product, index, categoryNameById) {
         showCurrentOnly: true,
       },
     ),
+    moreDetails: createActionButton(
+      "productVariants",
+      "bi bi-search",
+      "btn btn-primary btn-sm",
+    ),
     delete: createDeleteLink(),
     productId: product.product_id,
+    product,
     thumbnailImage: product.thumbnail_image,
     variants: Array.isArray(product.variant_data) ? product.variant_data : [],
   };
@@ -291,6 +313,9 @@ export async function addProduct(formData) {
   const payload = new FormData();
   const variantData = buildVariantData(formData);
   const thumbnailImage = formData.get("thumbnail_image");
+  const nutritionFactsImage = formData.get("nutrition_facts");
+  const perkIcons = getFiles(formData, "perks_icon").slice(0, 4);
+  const otherImages = getFiles(formData, "other_images");
 
   if (variantData.length === 0) {
     throw new Error("Add at least one product variant.");
@@ -304,16 +329,30 @@ export async function addProduct(formData) {
     "label_badge",
     "hsn",
     "gst",
+    "sku",
     "meta_title",
     "meta_keywords",
     "meta_description",
-  ].forEach((fieldName) => {
-    payload.set(fieldName, String(formData.get(fieldName) ?? "").trim());
-  });
+    "product_description",
+    "ingredients",
+    "other_information",
+  ].forEach((fieldName) => setTextField(payload, formData, fieldName));
 
   if (thumbnailImage instanceof File && thumbnailImage.size > 0) {
     payload.set("thumbnail_image", thumbnailImage);
   }
+
+  if (nutritionFactsImage instanceof File && nutritionFactsImage.size > 0) {
+    payload.set("nutrition_facts_image", nutritionFactsImage);
+  }
+
+  perkIcons.forEach((perkIcon, index) => {
+    payload.set(`perk_icon_${index + 1}`, perkIcon);
+  });
+
+  otherImages.forEach((otherImage) => {
+    payload.append("other_images[]", otherImage);
+  });
 
   payload.set("variant_data", JSON.stringify(variantData));
 

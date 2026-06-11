@@ -81,6 +81,44 @@ body {
   border-color: #a7f3d0;
 }
 
+.app-confirm-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1090;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgba(15, 23, 42, 0.45);
+}
+
+.app-confirm-modal {
+  width: min(100%, 24rem);
+  padding: 1.1rem;
+  border-radius: 1rem;
+  background: #ffffff;
+  box-shadow: 0 1rem 2rem rgba(15, 23, 42, 0.24);
+}
+
+.app-confirm-title {
+  margin-bottom: 0.35rem;
+  font-size: 1.02rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.app-confirm-text {
+  margin-bottom: 1rem;
+  color: #4b5563;
+  font-size: 0.95rem;
+}
+
+.app-confirm-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
 .table-image-frame {
   width: 4.5rem;
   height: 4.5rem;
