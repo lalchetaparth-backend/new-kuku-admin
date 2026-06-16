@@ -101,6 +101,18 @@ export const productsPageData = {
       ],
     },
     {
+      type: "select",
+      name: "is_savour",
+      label: "Is savour of all time ?",
+      colClass: "col-md-2",
+      defaultValue: "0",
+      required: true,
+      options: [
+        { value: "1", label: "Yes" },
+        { value: "0", label: "No" },
+      ],
+    },
+    {
       type: "text",
       name: "stock_in_pkts",
       label: "Stock in Pkts",

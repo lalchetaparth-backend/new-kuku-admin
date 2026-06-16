@@ -130,6 +130,10 @@ function setTextField(payload, formData, payloadFieldName, formFieldName = paylo
   payload.set(payloadFieldName, String(formData.get(formFieldName) ?? "").trim());
 }
 
+function normalizeSavourValue(value) {
+  return String(value ?? "").trim() === "1" ? "1" : "0";
+}
+
 function isActiveCategory(category) {
   const normalizedStatus = String(category?.category_status ?? "")
     .trim()
@@ -325,7 +329,6 @@ export async function addProduct(formData) {
     "product_name",
     "category_id",
     "manage_inventory",
-    "stock_in_pkts",
     "label_badge",
     "hsn",
     "gst",
@@ -337,6 +340,8 @@ export async function addProduct(formData) {
     "ingredients",
     "other_information",
   ].forEach((fieldName) => setTextField(payload, formData, fieldName));
+  payload.set("is_savour", normalizeSavourValue(formData.get("is_savour")));
+  setTextField(payload, formData, "stock_in_pkts");
 
   if (thumbnailImage instanceof File && thumbnailImage.size > 0) {
     payload.set("thumbnail_image", thumbnailImage);
