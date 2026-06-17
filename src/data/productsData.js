@@ -127,6 +127,13 @@ export const productsPageData = {
       placeholder: "Label badge",
       colClass: "col-md-2",
     },
+    {
+      type: "text",
+      name: "self_life",
+      label: "Self Life",
+      placeholder: "Self Life",
+      colClass: "col-md-2",
+    },
   ],
   contentFields: [
     {

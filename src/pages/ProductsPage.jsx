@@ -601,6 +601,8 @@ function ProductsPage() {
               <div className="row g-2">
                 <FormFields fields={primaryFields} />
 
+                <div className="w-100" />
+
                 <FormFields fields={productsPageData.contentFields} />
 
                 {variants.map((variant, index) => (

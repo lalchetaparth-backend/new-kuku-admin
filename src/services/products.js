@@ -339,6 +339,7 @@ export async function addProduct(formData) {
     "product_description",
     "ingredients",
     "other_information",
+    "self_life",
   ].forEach((fieldName) => setTextField(payload, formData, fieldName));
   payload.set("is_savour", normalizeSavourValue(formData.get("is_savour")));
   setTextField(payload, formData, "stock_in_pkts");
