@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
-import DataTable from "../components/DataTable";
 import DetailModal from "../components/DetailModal";
 import PageHeader from "../components/PageHeader";
-import Pagination from "../components/Pagination";
+import PaginatedDataTable from "../components/PaginatedDataTable";
 import { detailPages } from "../data/detailPages";
 import useDocumentTitle from "../hooks/useDocumentTitle";
 
@@ -89,10 +88,7 @@ function DetailRecordsPage({ pageKey }) {
         </div>
       ) : null}
       {rows.length > 0 ? (
-        <>
-          <DataTable columns={page.columns} rows={rows} onAction={handleAction} />
-          <Pagination />
-        </>
+        <PaginatedDataTable columns={page.columns} rows={rows} onAction={handleAction} />
       ) : null}
       <DetailModal detail={selectedDetail} onClose={() => setSelectedDetail(null)} />
     </>

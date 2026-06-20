@@ -105,7 +105,9 @@ function formatCategory(blogAd, categoryNameById) {
   }
 
   if (directCategory) {
-    return formatValue(directCategory);
+    const lookupKey = String(directCategory).trim();
+
+    return categoryNameById.get(lookupKey) ?? formatValue(directCategory);
   }
 
   const categoryId = getFirstValue(blogAd, ["category_id", "categoryId"]);
@@ -139,7 +141,7 @@ export function mapBlogAdsToRows(blogAds, categoryOptions = []) {
       title: formatValue(
         getFirstValue(blogAd, ["title", "adv_title", "ad_title", "name"]),
       ),
-      category: formatCategory(blogAd, categoryNameById),
+      category_name: formatCategory(blogAd, categoryNameById),
       status: normalizeStatus(getFirstValue(blogAd, ["status", "ad_status"])),
     };
   });
@@ -204,8 +206,7 @@ export async function deleteBlogAd(blogAdId) {
     throw new Error("Blog advertisement id is missing.");
   }
 
-  return apiRequest("/admin/deleteBlogAd", {
+  return apiRequest(`/admin/deleteBlogAd?id=${encodeURIComponent(normalizedBlogAdId)}`, {
     method: "DELETE",
-    body: JSON.stringify({ blog_ad_id: Number(normalizedBlogAdId) }),
   });
 }

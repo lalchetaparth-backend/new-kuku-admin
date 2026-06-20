@@ -1,9 +1,8 @@
 import { useEffect, useState } from "react";
-import DataTable from "../components/DataTable";
 import DetailModal from "../components/DetailModal";
 import FormFields from "../components/FormFields";
 import PageHeader from "../components/PageHeader";
-import Pagination from "../components/Pagination";
+import PaginatedDataTable from "../components/PaginatedDataTable";
 import TabbedPage from "../components/TabbedPage";
 import { createProductVariant, productsPageData } from "../data/productsData";
 import useDocumentTitle from "../hooks/useDocumentTitle";
@@ -570,17 +569,14 @@ function ProductsPage() {
                   </div>
                 ) : null}
                 {visibleRows.length > 0 ? (
-                  <>
-                    <DataTable
-                      columns={productsPageData.columns}
-                      rows={visibleRows}
-                      onStatusChange={(rowData, _statusValue, checked) =>
-                        handleStatusChange(rowData, checked)
-                      }
-                      onAction={handleAction}
-                    />
-                    <Pagination />
-                  </>
+                  <PaginatedDataTable
+                    columns={productsPageData.columns}
+                    rows={visibleRows}
+                    onStatusChange={(rowData, _statusValue, checked) =>
+                      handleStatusChange(rowData, checked)
+                    }
+                    onAction={handleAction}
+                  />
                 ) : null}
               </>
             );

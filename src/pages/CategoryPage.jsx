@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
-import DataTable from "../components/DataTable";
 import PageHeader from "../components/PageHeader";
-import Pagination from "../components/Pagination";
+import PaginatedDataTable from "../components/PaginatedDataTable";
 import StatusSwitch from "../components/StatusSwitch";
 import { categoryPageData } from "../data/categoryData";
 import useDocumentTitle from "../hooks/useDocumentTitle";
@@ -446,16 +445,16 @@ function CategoryPage() {
             </div>
           ) : (
             <>
-              <DataTable
+              <PaginatedDataTable
                 columns={categoryColumns}
                 rows={visibleCategories}
                 keyField="category_id"
                 className="category-table"
-              wrapperClassName="category-table-inner"
-              customStyles={categoryTableStyles}
-              onAction={handleAction}
-            />
-              <Pagination className="mt-3" />
+                wrapperClassName="category-table-inner"
+                customStyles={categoryTableStyles}
+                onAction={handleAction}
+                paginationClassName="mt-3"
+              />
             </>
           )}
         </div>

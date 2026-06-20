@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
-import DataTable from "../components/DataTable";
+import PaginatedDataTable from "../components/PaginatedDataTable";
 import PageHeader from "../components/PageHeader";
-import Pagination from "../components/Pagination";
 import { simpleTablePages } from "../data/simpleTablePages";
 import useDocumentTitle from "../hooks/useDocumentTitle";
 
@@ -79,10 +78,7 @@ function SimpleTablePage({ pageKey }) {
         </div>
       ) : null}
       {rows.length > 0 ? (
-        <>
-          <DataTable columns={page.columns} rows={rows} />
-          <Pagination />
-        </>
+        <PaginatedDataTable columns={page.columns} rows={rows} />
       ) : null}
     </>
   );

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import PageHeader from "../components/PageHeader";
 import Pagination from "../components/Pagination";
+import usePaginatedRows from "../hooks/usePaginatedRows";
 import useDocumentTitle from "../hooks/useDocumentTitle";
 import { addMarquee, deleteMarquee, getMarqueeRows } from "../services/marquee";
 
@@ -40,6 +41,12 @@ function MarqueePage() {
   const [actionErrorMessage, setActionErrorMessage] = useState("");
   const [statusToastMessage, setStatusToastMessage] = useState("");
   const [deleteConfirmRow, setDeleteConfirmRow] = useState(null);
+  const {
+    currentPage,
+    paginatedRows,
+    setCurrentPage,
+    totalItems,
+  } = usePaginatedRows(rows);
 
   const loadRows = async () => {
     setIsLoading(true);
@@ -253,7 +260,7 @@ function MarqueePage() {
                 </td>
               </tr>
             ) : null}
-            {rows.map((row) => (
+            {paginatedRows.map((row) => (
               <tr key={row.marqueeId || row.id}>
                 <td>{row.id}</td>
                 <td>{row.title}</td>
@@ -274,7 +281,13 @@ function MarqueePage() {
         </table>
       </div>
 
-      {rows.length > 0 ? <Pagination /> : null}
+      {rows.length > 0 ? (
+        <Pagination
+          currentPage={currentPage}
+          onPageChange={setCurrentPage}
+          totalItems={totalItems}
+        />
+      ) : null}
 
       {deleteConfirmRow ? (
         <div className="app-confirm-backdrop" onClick={() => setDeleteConfirmRow(null)}>

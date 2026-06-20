@@ -30,11 +30,6 @@ function renderLabel(item) {
           {index < item.labelLines.length - 1 ? <br /> : null}
         </span>
       ))}
-      {item.showDot ? (
-        <sup>
-          <i className="bi bi-circle-fill text-danger" />
-        </sup>
-      ) : null}
     </>
   );
 }

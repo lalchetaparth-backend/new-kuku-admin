@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import PageHeader from "../components/PageHeader";
 import Pagination from "../components/Pagination";
 import StatusSwitch from "../components/StatusSwitch";
+import usePaginatedRows from "../hooks/usePaginatedRows";
 import useDocumentTitle from "../hooks/useDocumentTitle";
 import {
   addBlogAd,
@@ -294,6 +295,12 @@ function BlogsOfferPage() {
   };
 
   const visibleRows = filterBlogAdRows(rows, toolbarState);
+  const {
+    currentPage,
+    paginatedRows,
+    setCurrentPage,
+    totalItems,
+  } = usePaginatedRows(visibleRows);
 
   return (
     <>
@@ -434,7 +441,7 @@ function BlogsOfferPage() {
                 </td>
               </tr>
             ) : null}
-            {visibleRows.map((row) => {
+            {paginatedRows.map((row) => {
               return (
                 <tr key={row.blogAdId || row.id}>
                   <td>{row.id}</td>
@@ -443,7 +450,7 @@ function BlogsOfferPage() {
                   </td>
                   <td>{row.title}</td>
                   <td>
-                    <p className="mb-0">{row.category}</p>
+                    <p className="mb-0">{row.category_name}</p>
                   </td>
                   <td>
                     <StatusSwitch
@@ -477,7 +484,13 @@ function BlogsOfferPage() {
         </table>
       </div>
 
-      {visibleRows.length > 0 ? <Pagination /> : null}
+      {visibleRows.length > 0 ? (
+        <Pagination
+          currentPage={currentPage}
+          onPageChange={setCurrentPage}
+          totalItems={totalItems}
+        />
+      ) : null}
 
       {deleteConfirmRow ? (
         <div className="app-confirm-backdrop" onClick={() => setDeleteConfirmRow(null)}>

@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
-import DataTable from "../components/DataTable";
 import FormFields from "../components/FormFields";
 import PageHeader from "../components/PageHeader";
-import Pagination from "../components/Pagination";
+import PaginatedDataTable from "../components/PaginatedDataTable";
 import TabbedPage from "../components/TabbedPage";
 import { tabbedPages } from "../data/tabbedPages";
 import useDocumentTitle from "../hooks/useDocumentTitle";
@@ -532,22 +531,20 @@ function TabbedResourcePage({ pageKey }) {
                   </div>
                 ) : null}
                 {visibleRows.length > 0 ? (
-                  <>
-                    <DataTable
-                      columns={tab.columns}
-                      rows={visibleRows}
-                      wrapperClassName={
-                        pageKey === "blogs" && tab.id === "blogs-list" ? "mb-3" : ""
-                      }
-                      onStatusChange={(rowData, _statusValue, checked) =>
-                        handleStatusChange(tab, rowData, checked)
-                      }
-                      onAction={(action, rowData) =>
-                        handleTableAction(tab, action, rowData)
-                      }
-                    />
-                    {tab.hidePagination ? null : <Pagination />}
-                  </>
+                  <PaginatedDataTable
+                    columns={tab.columns}
+                    rows={visibleRows}
+                    wrapperClassName={
+                      pageKey === "blogs" && tab.id === "blogs-list" ? "mb-3" : ""
+                    }
+                    onStatusChange={(rowData, _statusValue, checked) =>
+                      handleStatusChange(tab, rowData, checked)
+                    }
+                    onAction={(action, rowData) =>
+                      handleTableAction(tab, action, rowData)
+                    }
+                    pagination={!tab.hidePagination}
+                  />
                 ) : null}
               </>
             );
