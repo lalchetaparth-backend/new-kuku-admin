@@ -3,6 +3,7 @@ import {
   distributorDetail,
   exportToolbarGroup,
 } from "./shared";
+import { getCustomerRows } from "../services/customers";
 import { getDistributorInquiryRows } from "../services/distributorInquiry";
 
 const detailColumns = [
@@ -14,6 +15,18 @@ const detailColumns = [
   { key: "email", header: "Email" },
   { key: "city", header: "City" },
   { key: "state", header: "State" },
+  { key: "detailsButton", header: "More Details" },
+];
+
+const customerColumns = [
+  { key: "id", header: "#" },
+  { key: "name", header: "Customer Name" },
+  { key: "mobile", header: "Mobile No." },
+  { key: "email", header: "Email" },
+  { key: "gst", header: "GST No." },
+  { key: "city", header: "City" },
+  { key: "state", header: "State" },
+  { key: "verified", header: "Verified" },
   { key: "detailsButton", header: "More Details" },
 ];
 
@@ -51,7 +64,9 @@ export const detailPages = {
     title: "Customers",
     documentTitle: "Customers - Kuku Foods",
     toolbarGroups: [exportToolbarGroup],
-    columns: detailColumns,
-    rows: [detailRow],
+    columns: customerColumns,
+    rows: [],
+    loadRows: getCustomerRows,
+    emptyMessage: "No customers found.",
   },
 };

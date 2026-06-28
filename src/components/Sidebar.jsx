@@ -1,6 +1,8 @@
+import { useEffect, useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { navSections } from "../data/shared";
-import { clearAdminSession } from "../services/auth";
+import { apiRequest } from "../lib/api";
+import { clearAdminSession, getAdminToken } from "../services/auth";
 import Icon from "./Icon";
 
 function closeMobileSidebar() {
@@ -21,21 +23,58 @@ function closeMobileSidebar() {
   sidebar.hide();
 }
 
-function renderLabel(item) {
+function formatCount(value) {
+  const numericValue = Number(value);
+
+  return Number.isFinite(numericValue) ? numericValue : null;
+}
+
+function renderLabel(item, stats) {
+  const count = item.countKey ? formatCount(stats[item.countKey]) : null;
+
   return (
     <>
-      {item.labelLines.map((line, index) => (
-        <span key={`${item.path}-${line}`}>
-          {line}
-          {index < item.labelLines.length - 1 ? <br /> : null}
-        </span>
-      ))}
+      {item.labelLines.map((line, index) => {
+        const isLastLine = index === item.labelLines.length - 1;
+        const label = isLastLine && count !== null ? `${line} (${count})` : line;
+
+        return (
+          <span key={`${item.path}-${line}`}>
+            {label}
+            {!isLastLine ? <br /> : null}
+          </span>
+        );
+      })}
     </>
   );
 }
 
 function Sidebar() {
   const navigate = useNavigate();
+  const [dashboardStats, setDashboardStats] = useState({});
+
+  useEffect(() => {
+    let isMounted = true;
+    const token = getAdminToken();
+
+    apiRequest("/admin/dashboard-stats", {
+      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+    })
+      .then((response) => {
+        if (isMounted) {
+          setDashboardStats(response?.data ?? {});
+        }
+      })
+      .catch(() => {
+        if (isMounted) {
+          setDashboardStats({});
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const handleSignOut = (event) => {
     event.preventDefault();
@@ -82,7 +121,7 @@ function Sidebar() {
                     onClick={closeMobileSidebar}
                   >
                     <Icon symbol={item.symbol} iconClass={item.iconClass} />
-                    <span>{renderLabel(item)}</span>
+                    <span>{renderLabel(item, dashboardStats)}</span>
                   </NavLink>
                 </li>
               ))}
